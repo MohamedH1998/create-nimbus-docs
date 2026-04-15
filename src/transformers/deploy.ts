@@ -40,7 +40,7 @@ async function applyCloudflare(dir: string) {
 				$schema: "node_modules/wrangler/config-schema.json",
 				name: "my-docs",
 				pages_build_output_dir: "./dist",
-				compatibility_date: "2025-04-01",
+				compatibility_date: "2026-04-15",
 			},
 			null,
 			2,

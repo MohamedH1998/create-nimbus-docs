@@ -23,7 +23,7 @@ export async function updatePackageJson(dir: string, options: PackageOptions) {
 	if (options.deploy === "cloudflare") {
 		// Add cloudflare adapter dependency
 		pkg.dependencies ??= {};
-		pkg.dependencies["@astrojs/cloudflare"] = "^14.0.0";
+		pkg.dependencies["@astrojs/cloudflare"] = "^13.1.10";
 
 		// Add deploy scripts
 		pkg.scripts["preview:cf"] = "wrangler pages dev ./dist";
