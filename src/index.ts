@@ -36,10 +36,13 @@ if (args.version) {
 async function main() {
 	p.intro("create-nimbus-docs");
 
+	const detected = detectPackageManager();
+
 	const responses = await getPromptResponses({
 		dir: args._[0] as string | undefined,
 		deploy: args.deploy as "cloudflare" | "other" | undefined,
 		content: args.content as "starter" | "empty" | undefined,
+		packageManager: detected !== "npm" ? detected : undefined,
 		yes: args.yes,
 	});
 
@@ -48,14 +51,14 @@ async function main() {
 		process.exit(1);
 	}
 
-	const pm = detectPackageManager();
+	const pm = responses.packageManager;
 
 	// Summary
 	p.note(
 		[
 			`Deploy:   ${responses.deploy === "cloudflare" ? "Cloudflare Pages" : "Static (deploy anywhere)"}`,
 			`Content:  ${responses.content === "starter" ? "Getting started guide + example page" : "Empty shell"}`,
-			`Manager:  ${pm} (${pm === detectPackageManager() ? "detected" : "default"})`,
+			`Manager:  ${pm}`,
 		].join("\n"),
 		"Creating project with",
 	);
@@ -66,9 +69,7 @@ async function main() {
 	}
 
 	await scaffold({
-		dir: responses.dir,
-		deploy: responses.deploy,
-		content: responses.content,
+		...responses,
 		packageManager: pm,
 	});
 

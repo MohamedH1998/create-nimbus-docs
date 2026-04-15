@@ -2,10 +2,13 @@ import * as p from "@clack/prompts";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
+export type PackageManager = "npm" | "pnpm" | "yarn" | "bun";
+
 interface PromptFlags {
 	dir?: string;
 	deploy?: "cloudflare" | "other";
 	content?: "starter" | "empty";
+	packageManager?: PackageManager;
 	yes?: boolean;
 }
 
@@ -13,6 +16,7 @@ export interface PromptResponses {
 	dir: string;
 	deploy: "cloudflare" | "other";
 	content: "starter" | "empty";
+	packageManager: PackageManager;
 }
 
 export async function getPromptResponses(
@@ -24,6 +28,7 @@ export async function getPromptResponses(
 			dir: flags.dir ?? "my-docs",
 			deploy: flags.deploy ?? "other",
 			content: flags.content ?? "starter",
+			packageManager: flags.packageManager ?? "npm",
 		};
 	}
 
@@ -80,5 +85,19 @@ export async function getPromptResponses(
 
 	if (p.isCancel(content)) return content;
 
-	return { dir: dir as string, deploy, content };
+	const packageManager =
+		flags.packageManager ??
+		((await p.select({
+			message: "Package manager?",
+			options: [
+				{ value: "npm", label: "npm" },
+				{ value: "pnpm", label: "pnpm" },
+				{ value: "yarn", label: "yarn" },
+				{ value: "bun", label: "bun" },
+			],
+		})) as PackageManager);
+
+	if (p.isCancel(packageManager)) return packageManager;
+
+	return { dir: dir as string, deploy, content, packageManager };
 }

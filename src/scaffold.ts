@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import { execSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { cpSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,11 +45,18 @@ export async function scaffold(options: ScaffoldOptions) {
 	// 3. Install dependencies
 	s.start(`Installing dependencies via ${packageManager}…`);
 	try {
-		const installCmd =
+		const cmd =
 			packageManager === "yarn" ? "yarn" : `${packageManager} install`;
-		execSync(installCmd, {
-			cwd: target,
-			stdio: ["ignore", "ignore", "inherit"],
+		const [bin, ...args] = cmd.split(" ");
+		await new Promise<void>((resolve, reject) => {
+			const child = spawn(bin, args, {
+				cwd: target,
+				stdio: ["ignore", "ignore", "inherit"],
+			});
+			child.on("close", (code) =>
+				code === 0 ? resolve() : reject(new Error(`exit ${code}`)),
+			);
+			child.on("error", reject);
 		});
 	} catch {
 		s.stop("Failed to install dependencies.");
