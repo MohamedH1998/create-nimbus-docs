@@ -1,0 +1,82 @@
+---
+/**
+ * Render — include a reusable partial in any docs page.
+ *
+ * Usage:
+ *   <Render file="quickstart" />
+ *   <Render file="workers/setup" />
+ *   <Render file="workers/setup" params={{ runtime: "node" }} />
+ *
+ * Partials live in src/content/partials/ as MDX files.
+ * Parameters are declared in the partial's frontmatter:
+ *   ---
+ *   params:
+ *     - runtime
+ *     - version?
+ *   ---
+ *
+ * Required params error at build time. Optional params use `?` suffix.
+ */
+
+import { getEntry, getCollection, render } from "astro:content";
+
+interface Props {
+  /** Partial ID — path relative to src/content/partials/ without extension */
+  file: string;
+  /** Parameters passed to the partial as `props.*` */
+  params?: Record<string, unknown>;
+}
+
+const { file, params } = Astro.props;
+const page = Astro.url.pathname;
+
+// --- Resolve partial from collection ---
+const partial = await getEntry("partials", file);
+
+if (!partial) {
+  const allPartials = await getCollection("partials");
+  const available = allPartials
+    .map((p) => p.id)
+    .sort()
+    .slice(0, 10)
+    .join(", ");
+  throw new Error(
+    `[Render] Partial "${file}" not found, included on "${page}". ` +
+      `Available partials: ${available}${allPartials.length > 10 ? ` (and ${allPartials.length - 10} more)` : ""}`,
+  );
+}
+
+// --- Parameter validation ---
+const declaredParams = partial.data.params;
+
+if (declaredParams) {
+  const required = declaredParams.filter((p: string) => !p.endsWith("?"));
+  const optional = declaredParams.filter((p: string) => p.endsWith("?"));
+  const allNames = [
+    ...required,
+    ...optional.map((p: string) => p.slice(0, -1)),
+  ];
+  const received = Object.keys(params ?? {});
+
+  const missing = required.filter((p: string) => !received.includes(p));
+  if (missing.length > 0) {
+    throw new Error(
+      `[Render] Missing required params ${JSON.stringify(missing)} for "${file}" on "${page}". ` +
+        `Expected: ${JSON.stringify(declaredParams)}, received: ${JSON.stringify(received)}`,
+    );
+  }
+
+  const unexpected = received.filter((p) => !allNames.includes(p));
+  if (unexpected.length > 0) {
+    throw new Error(
+      `[Render] Unexpected params ${JSON.stringify(unexpected)} for "${file}" on "${page}". ` +
+        `Declared: ${JSON.stringify(declaredParams)}`,
+    );
+  }
+}
+
+// --- Render the partial ---
+const { Content } = await render(partial);
+---
+
+<Content {...(params ?? {})} />

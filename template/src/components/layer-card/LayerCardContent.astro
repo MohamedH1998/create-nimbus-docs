@@ -1,0 +1,19 @@
+---
+/**
+ * LayerCardContent — raised content layer of a LayerCard.
+ * The primary visual area — code blocks, links, body content.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { class: className, ...attrs } = Astro.props;
+---
+
+<div
+  class={cn("relative flex flex-col gap-2 overflow-hidden rounded-lg bg-base p-4 pr-3 text-inherit ring ring-line", className)}
+  {...attrs}
+>
+  <slot />
+</div>

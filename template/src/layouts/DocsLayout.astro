@@ -1,0 +1,262 @@
+---
+/**
+ * DocsLayout.astro — Three-column documentation layout.
+ *
+ * Named slots for component overrides (pass from docs.route.astro):
+ *   header       — replaces the sticky header
+ *   sidebar      — replaces sidebar nav content (filter + tree)
+ *   toc          — replaces the table of contents
+ *   footer       — replaces the page footer
+ *   page-title   — replaces the h1 + description block
+ *   content-footer — replaces the lastUpdated + editUrl area
+ *   pagination   — replaces prev/next navigation
+ *
+ * When a named slot is not provided, the default component renders.
+ */
+import BaseLayout from "./BaseLayout.astro";
+import Header from "@/components/Header.astro";
+import Banner from "@/components/Banner.astro";
+import { Sidebar, SidebarFilter } from "@/components/sidebar";
+import TOC from "@/components/TOC.astro";
+import Breadcrumbs from "@/components/Breadcrumbs.astro";
+import Pagination from "@/components/Pagination.astro";
+import Footer from "@/components/Footer.astro";
+import type { SidebarItem } from "@/lib/sidebar";
+import type { TocEntry } from "@/lib/toc";
+import type { Breadcrumb } from "@/lib/navigation";
+import type { PrevNext } from "@/lib/navigation";
+import { docsConfig } from "@/docs.config";
+
+import type { HeadElement } from "@/lib/head";
+
+interface Props {
+  title: string;
+  description?: string;
+  sidebar: SidebarItem[];
+  headings: TocEntry[];
+  breadcrumbs: Breadcrumb[];
+  prevNext: PrevNext;
+  template?: "doc" | "splash";
+  banner?: { content: string; type?: "note" | "tip" | "caution" | "danger"; dismissible?: { id: string; days?: number } };
+  head?: HeadElement[];
+  pagefind?: boolean;
+  noindex?: boolean;
+  aiDeprioritize?: boolean;
+  lastUpdated?: Date;
+  editUrl?: string;
+  draft?: boolean;
+}
+
+const { title, description, sidebar, headings, breadcrumbs, prevNext, template = "doc", banner, head = [], pagefind = true, noindex, aiDeprioritize, lastUpdated, editUrl, draft } = Astro.props;
+const isSplash = template === "splash";
+const { features } = docsConfig;
+
+const hasHeader = Astro.slots.has("header");
+const hasSidebar = Astro.slots.has("sidebar");
+const hasToc = Astro.slots.has("toc");
+const hasFooter = Astro.slots.has("footer");
+const hasPageTitle = Astro.slots.has("page-title");
+const hasContentFooter = Astro.slots.has("content-footer");
+const hasPagination = Astro.slots.has("pagination");
+---
+
+<BaseLayout title={title} description={description} noindex={noindex || draft} aiDeprioritize={aiDeprioritize} head={head}>
+  <div class="flex flex-col min-h-screen">
+    {hasHeader ? <slot name="header" /> : <Header />}
+
+    {isSplash ? (
+      <main id="main-content" class="flex-1">
+        <slot />
+      </main>
+    ) : (
+      <div class="flex-1 mx-auto w-full">
+        <div class="flex">
+          {/* Sidebar — override via named slot "sidebar" */}
+          <aside id="desktop-sidebar" data-desktop-sidebar class="hidden lg:flex w-(--nb-sidebar-width) shrink-0 border-r border-line sticky top-14 h-[calc(100vh-3.5rem)] flex-col overflow-y-auto relative">
+            {hasSidebar ? (
+              <slot name="sidebar" />
+            ) : (
+              <nav class="px-4 pb-12 pt-5 flex-1">
+                <SidebarFilter />
+                <Sidebar items={sidebar} />
+              </nav>
+            )}
+            <div class="pointer-events-none sticky bottom-0 h-8 bg-gradient-to-t from-base to-transparent" />
+          </aside>
+
+          {/* Sidebar state restore — inline, runs immediately after sidebar is parsed.
+              Restores group open/close from sessionStorage, force-opens active page's
+              group, restores scroll position. Before paint — no FOUC. */}
+          <script is:inline aria-hidden="true">
+          (function () {
+            try {
+              if (!matchMedia("(min-width: 64rem)").matches) return;
+              const sidebar = document.getElementById("desktop-sidebar");
+              if (!sidebar) return;
+              const content = sidebar.querySelector("[data-sidebar-content]");
+              if (!content) return;
+
+              const raw = sessionStorage.getItem("sidebar-state");
+              let state;
+              if (raw) {
+                state = JSON.parse(raw);
+                if (state && content.dataset.sidebarHash === state.hash) {
+                  const groups = content.querySelectorAll("[data-sidebar-group]");
+                  for (let i = 0; i < groups.length; i++) {
+                    if (typeof state.open[i] === "boolean") {
+                      groups[i].open = state.open[i];
+                      groups[i].setAttribute("data-state", state.open[i] ? "open" : "closed");
+                    }
+                  }
+                }
+              }
+
+              // Active page's group must always be open, regardless of stored state
+              const active = sidebar.querySelector("[aria-current='page']");
+              if (active) {
+                let d = active.closest("details[data-sidebar-group]");
+                while (d) {
+                  d.open = true;
+                  d.setAttribute("data-state", "open");
+                  d = d.parentElement && d.parentElement.closest("details[data-sidebar-group]");
+                }
+              }
+
+              // Restore scroll or center active item
+              if (raw && state && state.scroll) {
+                sidebar.scrollTop = state.scroll;
+              } else if (active) {
+                const sr = sidebar.getBoundingClientRect();
+                const ar = active.getBoundingClientRect();
+                sidebar.scrollTop += ar.top - sr.top - sr.height / 2 + ar.height / 2;
+              }
+            } catch (_) {}
+          })();
+          </script>
+
+          {/* Content */}
+          <main id="main-content" class="flex-1 min-w-0">
+            <div class="mx-auto max-w-(--nb-content-max) px-4 lg:px-6 pt-6 pb-12">
+              {banner && <Banner content={banner.content} type={banner.type} dismissible={banner.dismissible} />}
+              <Breadcrumbs items={breadcrumbs} class="pb-2" />
+              <div {...(pagefind ? { "data-pagefind-body": "" } : { "data-pagefind-ignore": "" })}>
+                {/* Page title — override via named slot "page-title" */}
+                {hasPageTitle ? (
+                  <slot name="page-title" />
+                ) : (
+                  <Fragment>
+                    <h1 class="text-text mt-6 mb-0 leading-tight" style={`font-size:var(--nb-h1-size);font-weight:var(--nb-h1-weight);letter-spacing:var(--nb-h1-tracking)`}>{title}</h1>
+                    {description && (
+                      <p class="text-[1.0625rem] text-text-subtle leading-relaxed mt-2 mb-4">{description}</p>
+                    )}
+                    {!description && <div class="mb-4" />}
+                  </Fragment>
+                )}
+                <article class="docs-content max-w-none">
+                  <slot />
+                </article>
+                {/* Content footer — override via named slot "content-footer" */}
+                {hasContentFooter ? (
+                  <slot name="content-footer" />
+                ) : (lastUpdated || editUrl) && (
+                  <div class="mt-8 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-subtle">
+                    {lastUpdated && (
+                      <p class="m-0">
+                        Last updated on <time datetime={lastUpdated.toISOString()}>{new Intl.DateTimeFormat(undefined, { year: "numeric", month: "long", day: "numeric" }).format(lastUpdated)}</time>
+                      </p>
+                    )}
+                    {features.editLinks && editUrl && (
+                      <a href={editUrl} class="inline-flex items-center gap-1 text-text-subtle hover:text-text transition-colors no-underline" target="_blank" rel="noopener">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                        </svg>
+                        Edit this page
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Pagination — override via named slot "pagination" */}
+              {features.pagination && (hasPagination ? <slot name="pagination" /> : <Pagination prevNext={prevNext} />)}
+            </div>
+          </main>
+
+          {/* TOC — column always present for layout consistency; content hidden when no headings */}
+          {features.toc && (
+            <aside class="hidden xl:block w-(--nb-toc-width) shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
+              <div class="pt-6 pb-8 pl-8 pr-6">
+                {hasToc ? <slot name="toc" /> : <TOC headings={headings} />}
+              </div>
+            </aside>
+          )}
+        </div>
+      </div>
+    )}
+
+    {/* Footer — override via named slot "footer" */}
+    {!isSplash && (hasFooter ? <slot name="footer" /> : <Footer />)}
+  </div>
+
+  {/* Mobile sidebar overlay — native <dialog> for free focus trap + escape + backdrop */}
+  <dialog
+    data-mobile-sidebar
+    class="m-0 p-0 h-full w-full max-h-full max-w-full bg-transparent backdrop:bg-black/40"
+    aria-label="Site navigation"
+  >
+    <div data-mobile-sidebar-panel class="w-(--nb-sidebar-width) h-full bg-base overflow-y-auto shadow-lg">
+      <div class="sticky top-0 z-[1] flex items-center justify-between border-b border-line bg-base px-4 py-3">
+        <span class="font-semibold text-sm text-text">Navigation</span>
+        <button data-close-sidebar class="flex items-center justify-center w-8 h-8 rounded-md text-text-subtle hover:bg-interact hover:text-text transition-colors" aria-label="Close sidebar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <nav class="px-4 pb-8 pt-5">
+        {hasSidebar ? <slot name="sidebar" /> : (
+          <Fragment>
+            <SidebarFilter />
+            <Sidebar items={sidebar} />
+          </Fragment>
+        )}
+      </nav>
+    </div>
+  </dialog>
+
+  <script>
+    import { lockScroll, unlockScroll } from "@/lib/client/scroll-lock";
+
+    const dialog = document.querySelector<HTMLDialogElement>("[data-mobile-sidebar]");
+    const menuBtn = document.querySelector<HTMLElement>("[data-menu-btn]");
+
+    if (dialog && menuBtn) {
+      menuBtn.addEventListener("click", () => {
+        dialog.showModal();
+        lockScroll();
+        dialog.querySelector<HTMLElement>("[data-close-sidebar]")?.focus();
+      });
+
+      // Cleanup on close — fires for Escape, close button, backdrop click
+      dialog.addEventListener("close", () => {
+        unlockScroll();
+        menuBtn.focus();
+      });
+
+      // Close button
+      dialog.querySelector("[data-close-sidebar]")
+        ?.addEventListener("click", () => dialog.close());
+
+      // Backdrop click (clicks on <dialog> itself, outside the panel)
+      dialog.addEventListener("click", (e) => {
+        if (e.target === dialog) dialog.close();
+      });
+    }
+  </script>
+
+  {/* Sidebar state persistence — save on toggle, visibility change, scroll */}
+  <script>
+    import { initSidebarPersistence } from "@/lib/client/sidebar-state";
+    initSidebarPersistence();
+    document.addEventListener("astro:page-load", initSidebarPersistence);
+  </script>
+</BaseLayout>

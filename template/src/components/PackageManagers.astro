@@ -1,0 +1,143 @@
+---
+import { getTabs } from "../lib/package-managers";
+import type { CommandType, CommandOptions } from "../lib/package-managers";
+import { LayerCard, LayerCardHeader } from "./layer-card";
+
+interface Props extends CommandOptions {
+  pkg?: string;
+  type?: CommandType;
+}
+
+const { pkg, type = "add", args, dev, comment } = Astro.props;
+const tabs = getTabs(type, pkg, { args, dev, comment });
+const uid = `pm-${crypto.randomUUID()}`;
+---
+
+<script is:inline>
+if (!customElements.get("pm-restore")) {
+  customElements.define("pm-restore", class extends HTMLElement {
+    connectedCallback() {
+      const card = this.closest("[data-pm]");
+      if (!card) return;
+      let saved;
+      try { saved = sessionStorage.getItem("ui-pm-tab"); } catch { return; }
+      if (!saved) return;
+      const tabs = card.querySelectorAll("[data-pm-tab]");
+      let idx = -1;
+      tabs.forEach(function (t, i) { if (t.textContent.trim() === saved) idx = i; });
+      if (idx < 1) return;
+      tabs.forEach(function (t, i) { t.setAttribute("aria-selected", String(i === idx)); });
+      card.querySelectorAll("[data-pm-panel]").forEach(function (p, i) { p.hidden = i !== idx; });
+    }
+  });
+}
+</script>
+
+<LayerCard data-pm>
+  <LayerCardHeader role="tablist" aria-label="Package manager">
+    {tabs.map((tab, i) => (
+      <button
+        role="tab"
+        type="button"
+        aria-selected={i === 0 ? "true" : "false"}
+        aria-controls={`pm-panel-${uid}-${tab.mgr}`}
+        id={`pm-tab-${uid}-${tab.mgr}`}
+        data-pm-tab
+        class="m-0 cursor-pointer rounded-md border-0 bg-transparent px-2 py-0.5 text-xs leading-5 font-medium text-text-subtle transition-colors hover:bg-tint hover:text-text aria-selected:text-text"
+      >
+        {tab.mgr}
+      </button>
+    ))}
+  </LayerCardHeader>
+
+  {tabs.map((tab, i) => {
+    const cmdLines = tab.cmd.split("\n");
+    const commentPrefix = cmdLines.length > 1 ? cmdLines.slice(0, -1).join("\n") + "\n" : "";
+    const codeLine = cmdLines[cmdLines.length - 1];
+    const spaceIdx = codeLine.indexOf(" ");
+    const codeFirst = spaceIdx === -1 ? codeLine : codeLine.slice(0, spaceIdx);
+    const codeRest = spaceIdx === -1 ? "" : codeLine.slice(spaceIdx);
+    return (
+      <div
+        role="tabpanel"
+        id={`pm-panel-${uid}-${tab.mgr}`}
+        aria-labelledby={`pm-tab-${uid}-${tab.mgr}`}
+        hidden={i !== 0}
+        data-pm-panel
+        class="relative overflow-hidden rounded-lg bg-base text-inherit ring ring-line"
+      >
+        <div class="flex items-stretch">
+          <pre class="my-0 min-w-0 grow overflow-x-auto border-0 bg-transparent px-4 py-3 text-sm leading-relaxed whitespace-pre font-mono"><code data-pm-code>{commentPrefix}<span class="pm-cmd">{codeFirst}</span><span class="pm-args">{codeRest}</span></code></pre>
+          <button
+            type="button"
+            data-pm-copy
+            data-command={tab.cmd}
+            aria-label="Copy to clipboard"
+            class="m-0 flex shrink-0 cursor-pointer items-center justify-center border-0 border-l border-solid border-line bg-transparent px-3 text-text-subtle transition-colors hover:text-text"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true">
+              <path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  })}
+  <pm-restore style="display:contents"></pm-restore>
+</LayerCard>
+
+<style>
+  .pm-cmd { color: var(--pm-cmd); }
+  .pm-args { color: var(--pm-args); }
+
+  [data-pm] {
+    --pm-cmd: oklch(0.46 0.14 155);
+    --pm-args: oklch(0.52 0.12 60);
+  }
+
+  :global([data-mode="dark"]) [data-pm] {
+    --pm-cmd: oklch(0.75 0.14 155);
+    --pm-args: oklch(0.88 0.1 85);
+  }
+
+  [data-pm-tab][aria-selected="true"] {
+    background: oklch(0.92 0 0);
+  }
+
+  :global([data-mode="dark"]) [data-pm-tab][aria-selected="true"] {
+    background: oklch(0.26 0 0);
+  }
+</style>
+
+
+<script>
+  import { initTabs } from "@/lib/client/tabs";
+
+  function initPackageManagers() {
+    document.querySelectorAll<HTMLElement>("[data-pm]").forEach((container) => {
+      if (container.hasAttribute("data-initialized")) return;
+      container.setAttribute("data-initialized", "true");
+
+      initTabs({
+        container,
+        tabSelector: "[data-pm-tab]",
+        panelSelector: "[data-pm-panel]",
+        rovingTabindex: true,
+        sync: { key: "ui-pm-tab", storage: "session" },
+      });
+
+      container.querySelectorAll<HTMLButtonElement>("[data-pm-copy]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(btn.dataset.command ?? "");
+            const prev = btn.innerHTML;
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34Z"/></svg>`;
+            setTimeout(() => { btn.innerHTML = prev; }, 1500);
+          } catch { /* clipboard unavailable */ }
+        });
+      });
+    });
+  }
+  initPackageManagers();
+  document.addEventListener("astro:page-load", initPackageManagers);
+</script>

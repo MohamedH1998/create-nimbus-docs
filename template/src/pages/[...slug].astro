@@ -1,0 +1,21 @@
+---
+// Thin shim — Astro requires pages in src/pages/.
+// All route composition lives in docs.route.astro.
+import DocsRoute from "../docs.route.astro";
+import { getVisibleDocs } from "@/lib/content";
+
+export async function getStaticPaths() {
+  const entries = await getVisibleDocs();
+  return entries.map((entry) => {
+    const slug = entry.id === "index" ? "" : entry.id;
+    return {
+      params: { slug: slug || undefined },
+      props: { entry },
+    };
+  });
+}
+
+const { entry } = Astro.props;
+---
+
+<DocsRoute entry={entry} />

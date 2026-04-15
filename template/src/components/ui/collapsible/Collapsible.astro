@@ -1,0 +1,43 @@
+---
+/**
+ * Collapsible — animated <details> with smooth open/close transition.
+ * Compose with CollapsibleTrigger + CollapsibleContent.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"details"> {
+  /** Start open. Default false. */
+  open?: boolean;
+}
+
+const { open = false, class: className, ...attrs } = Astro.props;
+---
+
+<details
+  data-collapsible
+  class={cn(className)}
+  open={open || undefined}
+  data-state={open ? "open" : "closed"}
+  {...attrs}
+>
+  <slot />
+</details>
+
+<script>
+  import { initCollapsible } from "@/lib/client/collapsible";
+
+  function initCollapsibles() {
+    document.querySelectorAll<HTMLDetailsElement>("[data-collapsible]").forEach((details) => {
+      if (details.hasAttribute("data-initialized")) return;
+      details.setAttribute("data-initialized", "true");
+
+      const content = details.querySelector<HTMLElement>("[data-collapsible-content]");
+      if (!content) return;
+
+      initCollapsible({ details, content });
+    });
+  }
+  initCollapsibles();
+  document.addEventListener("astro:page-load", initCollapsibles);
+</script>

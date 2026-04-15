@@ -1,0 +1,56 @@
+---
+/**
+ * Hero — splash page hero section with title, tagline, and CTA actions.
+ * Used by docs.route.astro for template="splash" pages.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface HeroAction {
+  text: string;
+  link: string;
+  variant?: "primary" | "secondary" | "outline";
+}
+
+interface Props extends HTMLAttributes<"div"> {
+  title: string;
+  tagline?: string;
+  actions?: HeroAction[];
+}
+
+const { title, tagline, actions, class: className, ...attrs } = Astro.props;
+---
+
+<div class={cn("relative flex flex-col items-center justify-center text-center px-6 py-24 sm:py-32 min-h-[min(80vh,600px)]", className)} {...attrs}>
+  <h1 class="text-4xl sm:text-5xl font-bold tracking-[-0.03em] text-text leading-[1.1] mb-5">
+    {title}
+  </h1>
+  {tagline && (
+    <p class="text-[1.0625rem] text-text-subtle leading-relaxed max-w-[30rem] mx-auto mb-10">{tagline}</p>
+  )}
+  {actions && actions.length > 0 && (
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      {actions.map((action) => (
+        <a
+          href={action.link}
+          class={cn(
+            "inline-flex items-center gap-2 rounded-lg text-sm font-medium transition-all duration-150",
+            (action.variant === "primary" || !action.variant) && "bg-fill text-text-inverse hover:bg-fill-hover px-5 py-2.5 shadow-sm hover:shadow",
+            action.variant === "secondary" && "bg-tint text-text hover:bg-interact px-5 py-2.5",
+            action.variant === "outline" && "border border-line-strong text-text-subtle hover:text-text hover:bg-interact px-5 py-2.5",
+          )}
+        >
+          {action.text}
+          {(action.variant === "primary" || !action.variant) && (
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          )}
+        </a>
+      ))}
+    </div>
+  )}
+  <div class="mt-12 w-full max-w-lg text-left docs-content text-sm mx-auto">
+    <slot />
+  </div>
+</div>

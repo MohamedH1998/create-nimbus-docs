@@ -1,0 +1,94 @@
+---
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  content: string;
+  type?: "note" | "tip" | "caution" | "danger";
+  dismissible?: { id: string; days?: number };
+}
+
+const { content, type = "note", dismissible, class: className, ...attrs } = Astro.props;
+
+function sanitizeBannerHtml(value: string): string {
+  return value
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s+(href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\2/gi, "");
+}
+
+const config: Record<string, { border: string; bg: string }> = {
+  note: { border: "border-info", bg: "bg-info-tint" },
+  tip: { border: "border-success", bg: "bg-success-tint" },
+  caution: { border: "border-warning", bg: "bg-warning-tint" },
+  danger: { border: "border-danger", bg: "bg-danger-tint" },
+};
+
+const c = config[type] ?? config.note;
+const safeContent = sanitizeBannerHtml(content);
+---
+
+<div
+  role={type === "danger" || type === "caution" ? "alert" : "status"}
+  class={cn("w-full border-b px-4 py-2 text-sm text-text", c.border, c.bg, className)}
+  {...(dismissible ? { "data-banner-dismiss": dismissible.id, "data-banner-days": dismissible.days } : {})}
+  {...attrs}
+>
+  <div class="mx-auto flex max-w-(--nb-content-max) items-center justify-center gap-2">
+    <span class="text-center">
+      <Fragment set:html={safeContent} />
+    </span>
+    {dismissible && (
+      <button
+        type="button"
+        data-banner-close
+        class="ml-auto -mr-1 shrink-0 rounded-md p-1 text-current opacity-60 transition-opacity hover:opacity-100"
+        aria-label="Dismiss banner"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+        </svg>
+      </button>
+    )}
+  </div>
+</div>
+
+<script>
+  function initBanners() {
+    document.querySelectorAll<HTMLElement>("[data-banner-dismiss]").forEach((banner) => {
+      if (banner.hasAttribute("data-banner-initialized")) return;
+      banner.setAttribute("data-banner-initialized", "true");
+
+      const id = banner.dataset.bannerDismiss!;
+      const key = `banner-dismissed-${id}`;
+
+      // Check if already dismissed
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const expiry = Number(stored);
+          if (expiry === 0 || expiry > Date.now()) {
+            banner.remove();
+            return;
+          }
+          // Expired — clear and show again
+          localStorage.removeItem(key);
+        }
+      } catch {}
+
+      // Wire up close button
+      const btn = banner.querySelector("[data-banner-close]");
+      btn?.addEventListener("click", () => {
+        const days = Number(banner.dataset.bannerDays) || 0;
+        const value = days > 0 ? String(Date.now() + days * 86400000) : "0";
+        try { localStorage.setItem(key, value); } catch {}
+        banner.remove();
+      });
+    });
+  }
+  initBanners();
+  if (!document.documentElement.hasAttribute("data-banner-listener")) {
+    document.documentElement.setAttribute("data-banner-listener", "");
+    document.addEventListener("astro:page-load", initBanners);
+  }
+</script>

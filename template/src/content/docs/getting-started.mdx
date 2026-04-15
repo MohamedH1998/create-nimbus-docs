@@ -1,0 +1,28 @@
+---
+title: Getting Started
+description: Install dependencies and start writing docs.
+sidebar:
+  order: 1
+---
+
+import PackageManagers from "@/components/PackageManagers.astro";
+
+## Install dependencies
+
+<PackageManagers type="install" />
+
+## Start the dev server
+
+<PackageManagers type="run" args="dev" />
+
+Your site is now running at `http://localhost:4321`.
+
+## Project structure
+
+| Path | Purpose |
+| --- | --- |
+| `src/content/docs/` | Your documentation pages (MDX) |
+| `src/docs.config.ts` | Site title, logo, links |
+| `src/styles/globals.css` | Theme tokens — colors, fonts, layout |
+
+Edit any `.mdx` file in `src/content/docs/` and the browser reloads automatically.

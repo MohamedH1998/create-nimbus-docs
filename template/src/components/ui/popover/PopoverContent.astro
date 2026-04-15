@@ -1,0 +1,39 @@
+---
+/**
+ * PopoverContent — floating panel anchored to the trigger.
+ * Uses native popover attribute for top-layer, light dismiss, escape-to-close.
+ *
+ * Positioned below the trigger by default via CSS.
+ * Override with class="top-0 right-0" etc. for other placements.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { class: className, ...attrs } = Astro.props;
+---
+
+<div
+  data-popover-content
+  class={cn(
+    "absolute top-full left-0 z-50 mt-1",
+    "rounded-lg border border-line bg-base p-2 shadow-lg",
+    "m-0 inset-[unset]",
+    className,
+  )}
+  {...attrs}
+>
+  <slot />
+</div>
+
+<style>
+  /*
+   * Override native popover positioning.
+   * The browser sets position:fixed + centers with margin:auto by default.
+   * We need position:absolute relative to the Popover wrapper instead.
+   */
+  [data-popover-content] {
+    position: absolute;
+  }
+</style>

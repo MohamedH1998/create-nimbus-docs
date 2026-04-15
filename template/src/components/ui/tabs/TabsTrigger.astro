@@ -1,0 +1,31 @@
+---
+/**
+ * TabsTrigger — individual tab button within a TabsList.
+ * Use `value` to match with a TabsContent of the same value.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"button"> {
+  /** Value matching a TabsContent. Used for programmatic tab switching. */
+  value: string;
+}
+
+const { value, class: className, ...attrs } = Astro.props;
+---
+
+<button
+  role="tab"
+  type="button"
+  data-tabs-trigger
+  data-value={value}
+  class={cn(
+    "px-4 py-2 text-sm font-medium leading-6 whitespace-nowrap text-text-subtle transition-colors",
+    "hover:text-text aria-selected:text-brand",
+    "focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-[-2px]",
+    className,
+  )}
+  {...attrs}
+>
+  <slot />
+</button>

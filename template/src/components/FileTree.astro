@@ -1,0 +1,261 @@
+---
+/**
+ * FileTree — collapsible file/directory tree from a nested <ul>.
+ *
+ * Usage:
+ *   <FileTree>
+ *   - src/
+ *     - components/
+ *       - **Header.astro**
+ *       - Footer.astro
+ *   - package.json
+ *   - ...
+ *   </FileTree>
+ *
+ * Conventions:
+ *   - Trailing `/` → directory (collapsible, folder icon)
+ *   - `**name**` → highlighted entry
+ *   - `...` → placeholder ellipsis
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { class: className, ...attrs } = Astro.props;
+---
+
+<div class={cn("file-tree", className)} data-file-tree {...attrs}>
+  <slot />
+</div>
+
+<style>
+  .file-tree {
+    margin: 1rem 0;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-family: var(--nb-font-mono);
+    font-size: 0.875rem;
+    line-height: 1;
+    background: var(--nb-base);
+    box-shadow: 0 0 0 1px var(--nb-line);
+  }
+
+  /* Inline any <p> wrappers from markdown */
+  .file-tree :global(p) { display: inline; margin: 0; }
+
+  .file-tree :global(ul) {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 1.25rem;
+  }
+
+  .file-tree > :global(ul) { padding-left: 0; }
+
+  /* Guide lines on nested lists */
+  .file-tree :global(ul ul) { position: relative; }
+  .file-tree :global(ul ul)::before {
+    content: "";
+    position: absolute;
+    left: 0.4375rem;
+    top: 0;
+    bottom: 0.25rem;
+    width: 1px;
+    background: var(--nb-line);
+    pointer-events: none;
+  }
+
+  .file-tree :global(li) {
+    position: relative;
+    margin: 0;
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
+    color: var(--nb-text);
+  }
+
+  /* Directory rows — details/summary */
+  .file-tree :global(details) { margin: 0; }
+
+  .file-tree :global(summary) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3125rem 0.375rem;
+    margin: 0 -0.375rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    border-radius: 0.375rem;
+    transition: background 0.12s ease;
+  }
+
+  .file-tree :global(summary::-webkit-details-marker) { display: none; }
+  .file-tree :global(summary::marker) { display: none; content: ""; }
+
+  .file-tree :global(summary:hover) {
+    background: var(--nb-tint);
+  }
+
+  /* File rows */
+  .file-tree :global([data-file]) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3125rem 0.375rem;
+    margin: 0 -0.375rem;
+    border-radius: 0.375rem;
+    cursor: default;
+  }
+
+  /* Chevron — rotates when open */
+  .file-tree :global(.ft-chev) {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--nb-text-subtle);
+    transition: transform 0.15s ease;
+  }
+
+  .file-tree :global(details[open] > summary > .ft-chev) {
+    transform: rotate(90deg);
+  }
+
+  /* File/folder icons */
+  .file-tree :global(.ft-icon) {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--nb-text-subtle);
+  }
+
+  /* Invisible spacer — keeps files aligned with directory names */
+  .file-tree :global(.ft-sp) {
+    flex-shrink: 0;
+    width: 0.875rem;
+  }
+
+  /* Clamp label to one line */
+  .file-tree :global(.ft-label) {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  /* Highlighted entries */
+  .file-tree :global(strong) {
+    font-weight: 600;
+    color: var(--nb-text);
+  }
+
+  /* Placeholder (...) */
+  .file-tree :global([data-placeholder]) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3125rem 0.375rem;
+    margin: 0 -0.375rem;
+    color: var(--nb-text-subtle);
+    letter-spacing: 0.1em;
+  }
+</style>
+
+<script>
+  // Phosphor Regular — CaretRight, FolderSimple, File
+  const CHEV = `<svg class="ft-chev" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg>`;
+  const FOLDER = `<svg class="ft-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M216,72H131.31L104,44.69A15.86,15.86,0,0,0,92.69,40H40A16,16,0,0,0,24,56V200.62A15.4,15.4,0,0,0,39.38,216H216.89A15.13,15.13,0,0,0,232,200.89V88A16,16,0,0,0,216,72Zm0,128H40V56H92.69l29.66,29.66A8,8,0,0,0,128,88h88Z"/></svg>`;
+  const FILE = `<svg class="ft-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Z"/></svg>`;
+  const SPACER = `<span class="ft-sp" aria-hidden="true"></span>`;
+  const EMPTY_ICON = `<span class="ft-icon" aria-hidden="true"></span>`;
+
+  function createNode(markup: string): HTMLElement {
+    const template = document.createElement("template");
+    template.innerHTML = markup.trim();
+    return template.content.firstElementChild as HTMLElement;
+  }
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function getSafeLabel(nodes: ChildNode[], stripTrailingSlash = false): string {
+    return nodes
+      .map((node) => {
+        let text = node.textContent ?? "";
+        if (stripTrailingSlash) {
+          text = text.replace(/\/\s*$/, "");
+        }
+        text = text.trim();
+        if (!text) return "";
+
+        if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === "STRONG") {
+          return `<strong>${escapeHtml(text)}</strong>`;
+        }
+
+        return escapeHtml(text);
+      })
+      .join("");
+  }
+
+  function createLabel(label: string): HTMLSpanElement {
+    const span = document.createElement("span");
+    span.className = "ft-label";
+    span.innerHTML = label;
+    return span;
+  }
+
+  function initFileTree() {
+    document.querySelectorAll<HTMLElement>("[data-file-tree]").forEach((tree) => {
+      if (tree.hasAttribute("data-initialized")) return;
+      tree.setAttribute("data-initialized", "true");
+
+      for (const li of tree.querySelectorAll("li")) {
+      const childUl = li.querySelector<HTMLUListElement>(":scope > ul");
+      const text = li.textContent?.trim() ?? "";
+
+      // Placeholder
+      if (text === "..." || text === "\u2026") {
+        li.setAttribute("data-placeholder", "");
+        li.replaceChildren(
+          createNode(SPACER),
+          createNode(EMPTY_ICON),
+          createLabel("\u22EF"),
+        );
+        continue;
+      }
+
+      if (childUl) {
+        // Directory — wrap in collapsible details/summary
+        const label = getSafeLabel(
+          [...li.childNodes].filter((node) => node !== childUl),
+          true,
+        );
+
+        const details = document.createElement("details");
+        details.open = true;
+        const summary = document.createElement("summary");
+        summary.appendChild(createNode(CHEV));
+        summary.appendChild(createNode(FOLDER));
+        summary.appendChild(createLabel(label));
+        details.appendChild(summary);
+        details.appendChild(childUl);
+        li.replaceChildren(details);
+      } else {
+        // File
+        li.setAttribute("data-file", "");
+        const label = getSafeLabel([...li.childNodes]);
+        li.replaceChildren(
+          createNode(SPACER),
+          createNode(FILE),
+          createLabel(label),
+        );
+      }
+    }
+    });
+  }
+  initFileTree();
+  document.addEventListener("astro:page-load", initFileTree);
+</script>

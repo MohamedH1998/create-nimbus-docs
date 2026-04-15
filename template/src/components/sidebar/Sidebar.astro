@@ -1,0 +1,35 @@
+---
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+import SidebarGroup from "./SidebarGroup.astro";
+import SidebarLink from "./SidebarLink.astro";
+import type { SidebarItem } from "@/lib/sidebar";
+import { sidebarHash } from "@/lib/sidebar";
+
+interface Props extends HTMLAttributes<"div"> {
+  items: SidebarItem[];
+}
+
+const { items, class: className, ...attrs } = Astro.props;
+const hash = sidebarHash(items);
+---
+
+<div data-sidebar-content data-sidebar-hash={hash} class={cn(className)} {...attrs}>
+  <ul class="top-level flex list-none flex-col gap-0.5 p-0">
+    {items.map((item) =>
+      item.type === "group" ? (
+        <li>
+          <SidebarGroup label={item.label} items={item.children} collapsed={item.collapsed} badge={item.badge} />
+        </li>
+      ) : item.type === "external" ? (
+        <li>
+          <SidebarLink label={item.label} href={item.href} badge={item.badge} target="_blank" rel="noopener" />
+        </li>
+      ) : (
+        <li>
+          <SidebarLink label={item.label} href={item.href} isCurrent={item.isCurrent} badge={item.badge} />
+        </li>
+      ),
+    )}
+  </ul>
+</div>

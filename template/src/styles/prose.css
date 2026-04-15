@@ -1,0 +1,172 @@
+/* Docs markdown styling scoped to docs content containers only. */
+
+.docs-content {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: var(--nb-text);
+}
+
+/* Vertical rhythm — every direct child gets spacing by default.
+   Components can override with their own margin utilities (my-4, mt-6, etc.)
+   because :where() keeps specificity at (0,1,0) and utilities come later. */
+.docs-content > :where(:not(:first-child)) {
+  margin-top: 1.25rem;
+}
+
+.docs-content :where(ul:not([class])) {
+  padding-left: 1.25rem;
+  list-style-type: disc;
+}
+
+.docs-content :where(ol:not([class])) {
+  padding-left: 1.25rem;
+  list-style-type: decimal;
+}
+
+.docs-content :where(ul:not([class]) ul:not([class])) {
+  list-style-type: circle;
+}
+
+.docs-content :where(ul:not([class]) ul:not([class]) ul:not([class])) {
+  list-style-type: square;
+}
+
+.docs-content :where(li:not([class])) {
+  margin: 0.25rem 0;
+}
+
+.docs-content :where(blockquote:not([class])) {
+  margin: 1.25rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--nb-line);
+  color: var(--nb-text-subtle);
+}
+
+.docs-content :where(hr:not([class])) {
+  border: 0;
+  border-top: 1px solid var(--nb-line);
+  margin: 1.5rem 0;
+}
+
+/* Component boundary — elements with a class attribute are component-owned.
+   Markdown never adds classes to h1–h6 or p; components always do. */
+.docs-content :where(h1, h2, h3, h4, h5, h6, p):where([class]) {
+  margin: 0;
+  font-size: inherit;
+}
+
+/* Markdown heading typography is token-driven from globals.css. */
+.docs-content :where(h1:not([class])) {
+  font-size: var(--nb-h1-size);
+  font-weight: var(--nb-h1-weight);
+  letter-spacing: var(--nb-h1-tracking);
+  margin-top: 0;
+}
+
+.docs-content :where(h2:not([class])) {
+  font-size: var(--nb-h2-size);
+  font-weight: var(--nb-h2-weight);
+  letter-spacing: var(--nb-h2-tracking);
+  margin-top: 2.5rem;
+}
+
+.docs-content :where(h3:not([class])) {
+  font-size: var(--nb-h3-size);
+  font-weight: var(--nb-h3-weight);
+  letter-spacing: var(--nb-h3-tracking);
+  margin-top: 2rem;
+}
+
+.docs-content :where(h4:not([class]), h5:not([class]), h6:not([class])) {
+  font-weight: var(--nb-h4-weight);
+}
+
+.docs-content :where(h1:not([class]), h2:not([class]), h3:not([class]), h4:not([class])) {
+  scroll-margin-top: 5rem;
+}
+
+.docs-content :where(code:not([class])):not(:where(pre *)) {
+  font-family: var(--nb-font-mono);
+  background: var(--nb-recessed);
+  border: 1px solid var(--nb-line);
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.8125em;
+  font-weight: 450;
+}
+
+.docs-content :where(code:not([class])):not(:where(pre *))::before,
+.docs-content :where(code:not([class])):not(:where(pre *))::after {
+  content: none;
+}
+
+.docs-content :where(pre:not([class])) {
+  font-family: var(--nb-font-mono);
+}
+
+/* Expressive Code blocks — reset inline code styles inside code frames.
+   Expressive Code handles its own theming, fonts, and spacing via
+   astro.config.ts styleOverrides. Vertical margin is larger than base
+   rhythm (1.25rem) because code blocks are visually dense. */
+.docs-content .expressive-code {
+  margin: 1.5rem 0;
+}
+
+.docs-content .expressive-code code {
+  background: none;
+  border: none;
+  padding: var(--ec-codePadBlk) 0;
+  font-size: inherit;
+  font-weight: inherit;
+  border-radius: 0;
+}
+
+.docs-content .expressive-code .frame.has-title:not(.is-terminal) .header > .title:first-of-type {
+  border-top-left-radius: var(--tab-border-radius);
+}
+
+/* Rounded bordered table — matches card radius (rounded-xl = 0.75rem).
+   Uses border-collapse:separate so border-radius works natively on the
+   <table> element. overflow:hidden clips cells to rounded corners. */
+.docs-content :where(table:not([class])) {
+  width: 100%;
+  text-align: left;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.75rem;
+  border: 1px solid var(--nb-line);
+  overflow: hidden;
+}
+
+.docs-content :where(th:not([class])),
+.docs-content :where(td:not([class])) {
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--nb-line);
+}
+
+.docs-content :where(th:not([class])) {
+  background: var(--nb-recessed);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.docs-content :where(tbody:not([class]) tr:not([class]):last-child td:not([class])) {
+  border-bottom: none;
+}
+
+.docs-content :where(a:not([class])) {
+  color: var(--nb-text);
+  text-decoration-line: underline;
+  text-decoration-color: var(--nb-line-strong);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  font-weight: 500;
+  transition: text-decoration-color 0.15s;
+}
+
+.docs-content :where(a:not([class]):hover) {
+  text-decoration-color: var(--nb-text);
+}
+

@@ -1,0 +1,84 @@
+---
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import SidebarLink from "./SidebarLink.astro";
+import Badge from "@/components/Badge.astro";
+import type { SidebarItem, SidebarBadge } from "@/lib/sidebar";
+
+interface Props extends HTMLAttributes<"details"> {
+  label: string;
+  items: SidebarItem[];
+  collapsed?: boolean;
+  badge?: SidebarBadge;
+}
+
+const { label, items, collapsed, badge, class: className, open: _open, ...attrs } = Astro.props;
+function hasActiveDescendant(items: SidebarItem[]): boolean {
+  return items.some((item) =>
+    item.type === "link"
+      ? Boolean(item.isCurrent)
+      : item.type === "group"
+        ? hasActiveDescendant(item.children)
+        : false,
+  );
+}
+
+const hasActive = hasActiveDescendant(items);
+const isOpen = Boolean(hasActive || collapsed === false || collapsed === undefined);
+---
+
+<Collapsible class={cn("group/accordion", className)} open={isOpen} data-sidebar-group {...attrs}>
+  <CollapsibleTrigger
+    class={cn(
+      "group/expander flex min-h-[2rem] items-center justify-between rounded-lg px-3 py-1 text-[0.8125rem] no-underline transition-colors duration-150",
+      "hover:bg-interact hover:text-text",
+      hasActive
+        ? "font-semibold text-text"
+        : "font-medium text-text-subtle",
+    )}
+    data-sidebar-group-label
+  >
+    <span class="flex items-center gap-2">
+      {label}
+      {badge && (
+        typeof badge === "string"
+          ? <Badge text={badge} />
+          : <Badge text={badge.text} variant={badge.variant} />
+      )}
+    </span>
+    <svg
+      class="sidebar-chevron ml-auto -mr-px shrink-0 text-text-subtle opacity-50 transition-transform duration-[250ms] ease-[cubic-bezier(0.87,0,0.13,1)] group-hover/expander:text-text"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+    </svg>
+  </CollapsibleTrigger>
+  <CollapsibleContent data-sidebar-accordion data-sidebar-group-content>
+    <ul class="mt-0.5 ml-3 list-none border-l border-line p-0 pl-2 flex flex-col gap-px">
+      {items.map((item) => (
+        <li class="break-words">
+          {item.type === "group" ? (
+            <Astro.self label={item.label} items={item.children} collapsed={item.collapsed} badge={item.badge} />
+          ) : item.type === "external" ? (
+            <SidebarLink label={item.label} href={item.href} badge={item.badge} target="_blank" rel="noopener" />
+          ) : (
+            <SidebarLink label={item.label} href={item.href} isCurrent={item.isCurrent} badge={item.badge} />
+          )}
+        </li>
+      ))}
+    </ul>
+  </CollapsibleContent>
+</Collapsible>
+
+<style is:global>
+  details[data-state="open"] > summary .sidebar-chevron {
+    transform: rotate(90deg);
+  }
+</style>

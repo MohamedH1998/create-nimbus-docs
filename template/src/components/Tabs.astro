@@ -1,0 +1,82 @@
+---
+/**
+ * Tabs — Starlight-compatible tab container.
+ *
+ * Users declare tabs declaratively in MDX:
+ *   <Tabs syncKey="pkg">
+ *     <TabItem label="npm">npm install</TabItem>
+ *     <TabItem label="pnpm">pnpm install</TabItem>
+ *   </Tabs>
+ *
+ * This component composes the tab primitives (TabsList) internally.
+ * For advanced/custom tab UIs, use the primitives directly:
+ *   import { TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+import { TabsList } from "./ui/tabs";
+
+interface Props extends HTMLAttributes<"div"> {
+  /** Sync tab selection across instances with the same key via localStorage */
+  syncKey?: string;
+}
+
+const { syncKey, class: className, ...attrs } = Astro.props;
+---
+
+<div data-tabs data-sync-key={syncKey} class={cn(className)} {...attrs}>
+  <TabsList />
+  <div class="mt-3">
+    <slot />
+  </div>
+</div>
+
+<script>
+  import { initTabs } from "@/lib/client/tabs";
+
+  let counter = 0;
+
+  function initTabContainers() {
+    document.querySelectorAll<HTMLElement>("[data-tabs]").forEach((container) => {
+      if (container.hasAttribute("data-initialized")) return;
+      container.setAttribute("data-initialized", "true");
+
+      const id = `tabs-${counter++}`;
+      const syncKey = container.dataset.syncKey;
+      const tablist = container.querySelector("[role=tablist]")!;
+      const indicator = container.querySelector<HTMLElement>("[data-tabs-indicator]");
+      const panels = Array.from(container.querySelectorAll("[data-tab-panel]"));
+
+      // Build tab triggers dynamically from TabItem's data-tab-label attributes
+      // (Starlight compat: users declare <TabItem label="..."> in MDX)
+      panels.forEach((panel, i) => {
+        const label = panel.getAttribute("data-tab-label") ?? "Tab";
+        const btn = document.createElement("button");
+        btn.role = "tab";
+        btn.type = "button";
+        btn.className =
+          "px-4 py-2 text-sm font-medium leading-6 whitespace-nowrap text-text-subtle transition-colors hover:text-text aria-selected:text-brand focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-[-2px]";
+        btn.textContent = label;
+
+        const panelId = `${id}-panel-${i}`;
+        const tabId = `${id}-tab-${i}`;
+        btn.id = tabId;
+        btn.setAttribute("aria-controls", panelId);
+        panel.id = panelId;
+        panel.setAttribute("aria-labelledby", tabId);
+
+        tablist.insertBefore(btn, indicator);
+      });
+
+      initTabs({
+        container,
+        tabSelector: "[role=tab]",
+        panelSelector: "[data-tab-panel]",
+        indicator,
+        sync: syncKey ? { key: `ui-synced-tabs__${syncKey}` } : undefined,
+      });
+    });
+  }
+  initTabContainers();
+  document.addEventListener("astro:page-load", initTabContainers);
+</script>

@@ -1,0 +1,59 @@
+---
+/**
+ * SidebarFilter — text input at top of sidebar that filters navigation by label.
+ * Delegates all logic to the shared filterable-tree primitive.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { class: className, ...attrs } = Astro.props;
+---
+
+<div class={cn("mb-3", className)} {...attrs}>
+  <input
+    data-sidebar-filter-input
+    type="search"
+    placeholder="Filter…  /"
+    class="w-full rounded-md border border-line bg-base px-3 py-1.5 text-sm text-text placeholder:text-text-subtle transition-colors focus-visible:border-brand focus-visible:outline-2 focus-visible:outline-ring"
+    aria-label="Filter navigation"
+    autocomplete="off"
+  />
+</div>
+
+<script>
+  import { initFilterableTree } from "@/lib/client/filterable-tree";
+
+  function initSidebarFilter() {
+    document.querySelectorAll<HTMLElement>("[data-sidebar-filter-input]").forEach((el) => {
+      if (el.hasAttribute("data-initialized")) return;
+      el.setAttribute("data-initialized", "true");
+
+      const container = el.parentElement;
+      if (container) initFilterableTree({ container });
+    });
+  }
+
+  function handleSidebarFilterShortcut(e: KeyboardEvent) {
+    if (e.key !== "/") return;
+    const tag = (document.activeElement as HTMLElement)?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || (document.activeElement as HTMLElement)?.isContentEditable) return;
+
+    const desktopInput = document.querySelector<HTMLInputElement>("[data-desktop-sidebar] [data-sidebar-filter-input]");
+    if (!desktopInput) return;
+
+    e.preventDefault();
+    desktopInput.focus();
+  }
+
+  function bindSidebarFilterShortcut(): void {
+    if (document.documentElement.hasAttribute("data-sidebar-filter-shortcut-bound")) return;
+    document.documentElement.setAttribute("data-sidebar-filter-shortcut-bound", "true");
+    document.addEventListener("keydown", handleSidebarFilterShortcut);
+  }
+
+  initSidebarFilter();
+  bindSidebarFilterShortcut();
+  document.addEventListener("astro:page-load", initSidebarFilter);
+</script>

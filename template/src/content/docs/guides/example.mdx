@@ -1,0 +1,38 @@
+---
+title: Example Page
+description: A sample docs page showing MDX components in action.
+sidebar:
+  order: 1
+---
+
+import { Aside, Tabs, TabItem, Steps } from "@/components";
+
+Standard Markdown works as expected — headings, links, code blocks, lists, tables. Components add interactive elements.
+
+## Asides
+
+<Aside type="note">
+  Asides highlight important information without breaking the reading flow.
+</Aside>
+
+<Aside type="tip">
+  A handy shortcut or best practice.
+</Aside>
+
+## Tabs
+
+<Tabs>
+  <TabItem label="npm">`npm install`</TabItem>
+  <TabItem label="pnpm">`pnpm install`</TabItem>
+  <TabItem label="yarn">`yarn`</TabItem>
+</Tabs>
+
+## Steps
+
+<Steps>
+1. Create a `.mdx` file in `src/content/docs/`
+2. Add a `title` in the frontmatter
+3. Write content with Markdown and components
+</Steps>
+
+See the full component list in `src/components/index.ts`.

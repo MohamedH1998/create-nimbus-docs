@@ -1,0 +1,100 @@
+---
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
+import { docsConfig } from "@/docs.config";
+import { mergeHead, canonicalURL, type HeadElement } from "@/lib/head";
+import AgentDirective from "@/components/AgentDirective.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Add noindex robots meta (draft pages, noindex frontmatter) */
+  noindex?: boolean;
+  /** Signal AI crawlers to deprioritize this page */
+  aiDeprioritize?: boolean;
+  /** Extra elements to inject into <head> from frontmatter */
+  head?: HeadElement[];
+}
+
+const { title, description, noindex, aiDeprioritize, head: pageHead = [] } = Astro.props;
+
+// --- Derived values ---
+const hasSite = !!Astro.site;
+const canonical = canonicalURL(Astro.url.pathname, Astro.site);
+const fullTitle = title !== docsConfig.title ? `${title} | ${docsConfig.title}` : title;
+const faviconHref = `${import.meta.env.BASE_URL}favicon.svg`;
+const lang = docsConfig.locale;
+
+// --- Head merge: global config + per-page frontmatter ---
+const mergedHead = mergeHead(docsConfig.head ?? [], pageHead);
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    {/* === 1. Critical: charset + viewport (spec compliance — must be first) === */}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* === 2. Title === */}
+    <title>{fullTitle}</title>
+
+
+    {/* === 4. Theme detection — before ANY stylesheet to prevent flash === */}
+    <script is:inline>
+      (function () {
+        let mode = null;
+        try {
+          mode = localStorage.getItem("ui-mode");
+        } catch {}
+        if (mode === "dark" || (!mode && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.setAttribute("data-mode", "dark");
+        }
+      })();
+    </script>
+
+    {/* === 4. SEO meta === */}
+    <meta name="generator" content={Astro.generator} />
+    {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    {aiDeprioritize && <meta name="ai-deprioritize" content="true" />}
+
+    {/* === 5. Links === */}
+    <link rel="icon" type="image/svg+xml" href={faviconHref} />
+    {hasSite && canonical && <link rel="canonical" href={canonical} />}
+    {hasSite && <link rel="sitemap" href="/sitemap-index.xml" />}
+    {hasSite && <link rel="alternate" type="text/markdown" href={`${docsConfig.site.replace(/\/$/, "")}${Astro.url.pathname.replace(/\/?$/, "/")}index.md`} />}
+
+    {/* === 6. Open Graph === */}
+    <meta property="og:title" content={title} />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content={docsConfig.title} />
+    <meta property="og:locale" content={lang} />
+    {description && <meta property="og:description" content={description} />}
+    {hasSite && canonical && <meta property="og:url" content={canonical} />}
+
+    {/* === 7. Twitter Card === */}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+
+    {/* === 8. Fonts (self-hosted via @fontsource) === */}
+
+    {/* === 9. Merged head elements (global config + page frontmatter) === */}
+    {mergedHead.map(({ tag: Tag, attrs = {}, content }) =>
+      content
+        ? <Tag {...attrs} set:html={content} />
+        : <Tag {...attrs} />
+    )}
+  </head>
+  <body class="min-h-screen bg-surface text-text antialiased">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-100 focus:rounded-md focus:bg-fill focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-text-inverse focus:no-underline focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
+    >
+      Skip to content
+    </a>
+    <AgentDirective />
+    <slot />
+  </body>
+</html>

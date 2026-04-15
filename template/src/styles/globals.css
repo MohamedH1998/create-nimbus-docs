@@ -1,0 +1,228 @@
+@import "tailwindcss";
+
+/* ============================================================
+ * Nimbus Theme — THE file you edit to customize your site.
+ *
+ * Architecture:
+ *   1. CSS custom properties define the design tokens
+ *   2. `@theme` block exposes them as Tailwind utilities
+ *   3. Dark mode uses `[data-mode="dark"]` attribute
+ *   4. All colors use oklch for perceptual uniformity
+ *
+ * Token prefix: --nb-* (nimbus)
+ * ============================================================ */
+
+/* ---- Light mode (default) ---- */
+:root {
+	color-scheme: light;
+
+	/* Surface */
+	--nb-surface: oklch(0.99 0 0);
+	--nb-base: oklch(1 0 0);
+	--nb-recessed: oklch(0.975 0 0);
+	--nb-tint: oklch(0.967 0 0);
+	--nb-contrast: oklch(0.145 0 0);
+
+	/* Text */
+	--nb-text: oklch(0.21 0 0);
+	--nb-text-subtle: oklch(0.556 0 0);
+	--nb-text-inverse: oklch(0.97 0 0);
+	/* Brand */
+	--nb-brand: oklch(0.145 0 0);
+	--nb-brand-hover: oklch(0.371 0 0);
+	--nb-brand-subtle: oklch(0.145 0 0 / 0.08);
+
+	/* Borders */
+	--nb-line: oklch(0.935 0 0);
+	--nb-line-strong: oklch(0.87 0 0);
+	--nb-ring: oklch(0.145 0 0 / 0.35);
+
+	/* Interactive */
+	--nb-interact: oklch(0.967 0 0);
+	--nb-fill: var(--nb-brand);
+	--nb-fill-hover: var(--nb-brand-hover);
+
+	/* Semantic — deep text, barely-there pastel tints */
+	--nb-info: oklch(0.45 0.18 255);
+	--nb-info-tint: oklch(0.965 0.015 255);
+	--nb-success: oklch(0.42 0.14 152);
+	--nb-success-tint: oklch(0.965 0.015 152);
+	--nb-warning: oklch(0.48 0.15 65);
+	--nb-warning-tint: oklch(0.97 0.02 70);
+	--nb-danger: oklch(0.47 0.18 25);
+	--nb-danger-tint: oklch(0.965 0.015 25);
+
+	/* Layout */
+	--nb-sidebar-width: 18.75rem;
+	--nb-toc-width: 18rem;
+	--nb-content-max: 43.5rem;
+
+	/* Typography — self-hosted via @fontsource-variable in BaseLayout.astro */
+	--nb-font-sans:
+		"Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+		sans-serif;
+	--nb-font-mono:
+		"JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "Cascadia Code",
+		"Source Code Pro", Menlo, Consolas, monospace;
+	--nb-h1-size: 2.1875rem;
+	--nb-h1-weight: 600;
+	--nb-h1-tracking: -0.025em;
+	--nb-h2-size: 1.3rem;
+	--nb-h2-weight: 650;
+	--nb-h2-tracking: -0.015em;
+	--nb-h3-size: 1.1rem;
+	--nb-h3-weight: 600;
+	--nb-h3-tracking: -0.01em;
+	--nb-h4-weight: 600;
+
+	/* Shadows */
+	--nb-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.04);
+	--nb-shadow: 0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04);
+	--nb-shadow-lg: 0 4px 12px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04);
+}
+
+/* Wider content area on large displays (e.g. MacBook Pro 16″) */
+@media (min-width: 1536px) {
+	:root {
+		--nb-content-max: 52rem;
+	}
+}
+
+/* ---- Dark mode ---- */
+[data-mode="dark"] {
+	color-scheme: dark;
+
+	--nb-surface: oklch(0.085 0 0);
+	--nb-base: oklch(0.145 0 0);
+	--nb-recessed: oklch(0.18 0 0);
+	--nb-tint: oklch(0.269 0 0);
+	--nb-contrast: oklch(0.93 0 0);
+
+	--nb-text: oklch(0.97 0 0);
+	--nb-text-subtle: oklch(0.556 0 0);
+	--nb-text-inverse: oklch(0.085 0 0);
+	--nb-brand: oklch(0.9 0 0);
+	--nb-brand-hover: oklch(0.7 0 0);
+	--nb-brand-subtle: oklch(0.9 0 0 / 0.1);
+
+	--nb-line: oklch(0.269 0 0);
+	--nb-line-strong: oklch(0.371 0 0);
+	--nb-ring: oklch(0.9 0 0 / 0.35);
+
+	--nb-interact: oklch(0.269 0 0);
+	--nb-fill: var(--nb-brand);
+	--nb-fill-hover: var(--nb-brand-hover);
+
+	--nb-info: oklch(0.75 0.12 255);
+	--nb-info-tint: oklch(0.17 0.03 260);
+	--nb-success: oklch(0.72 0.12 150);
+	--nb-success-tint: oklch(0.17 0.025 153);
+	--nb-warning: oklch(0.78 0.11 80);
+	--nb-warning-tint: oklch(0.19 0.03 70);
+	--nb-danger: oklch(0.72 0.14 25);
+	--nb-danger-tint: oklch(0.17 0.03 25);
+
+	--nb-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.2);
+	--nb-shadow: 0 1px 3px oklch(0 0 0 / 0.3), 0 1px 2px oklch(0 0 0 / 0.2);
+	--nb-shadow-lg: 0 4px 12px oklch(0 0 0 / 0.4), 0 2px 4px oklch(0 0 0 / 0.2);
+}
+
+/* ---- Tailwind theme mapping ---- */
+@theme {
+	--color-surface: var(--nb-surface);
+	--color-base: var(--nb-base);
+	--color-recessed: var(--nb-recessed);
+	--color-tint: var(--nb-tint);
+	--color-contrast: var(--nb-contrast);
+
+	--color-text: var(--nb-text);
+	--color-text-subtle: var(--nb-text-subtle);
+	--color-text-inverse: var(--nb-text-inverse);
+	--color-brand: var(--nb-brand);
+	--color-brand-hover: var(--nb-brand-hover);
+	--color-brand-subtle: var(--nb-brand-subtle);
+
+	--color-line: var(--nb-line);
+	--color-line-strong: var(--nb-line-strong);
+	--color-ring: var(--nb-ring);
+
+	--color-interact: var(--nb-interact);
+	--color-fill: var(--nb-fill);
+	--color-fill-hover: var(--nb-fill-hover);
+
+	--color-info: var(--nb-info);
+	--color-info-tint: var(--nb-info-tint);
+	--color-success: var(--nb-success);
+	--color-success-tint: var(--nb-success-tint);
+	--color-warning: var(--nb-warning);
+	--color-warning-tint: var(--nb-warning-tint);
+	--color-danger: var(--nb-danger);
+	--color-danger-tint: var(--nb-danger-tint);
+
+	--font-sans: var(--nb-font-sans);
+	--font-mono: var(--nb-font-mono);
+
+	--shadow-sm: var(--nb-shadow-sm);
+	--shadow-default: var(--nb-shadow);
+	--shadow-lg: var(--nb-shadow-lg);
+}
+
+/* ---- Minimal overrides the plugin doesn't cover ---- */
+html {
+	font-family: var(--nb-font-sans);
+	font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+body {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html:focus-within {
+		scroll-behavior: smooth;
+	}
+}
+
+::selection {
+	background: var(--nb-brand-subtle);
+	color: var(--nb-text);
+}
+
+/* ---- Focus indicators ---- */
+:focus-visible {
+	outline: 2px solid var(--nb-ring);
+	outline-offset: 2px;
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* ---- Scroll lock (used by native <dialog> overlays) ---- */
+[data-scroll-locked] {
+	overflow: hidden;
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--nb-line-strong);
+	border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--nb-text-subtle);
+}

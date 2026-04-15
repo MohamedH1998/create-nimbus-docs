@@ -1,0 +1,22 @@
+---
+/**
+ * CollapsibleContent — animated content wrapper for a Collapsible.
+ * Uses grid-template-rows for smooth height transition.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { class: className, ...attrs } = Astro.props;
+---
+
+<div
+  data-collapsible-content
+  class={cn("grid grid-rows-[0fr] [[data-state=open]>&]:grid-rows-[1fr]", className)}
+  {...attrs}
+>
+  <div class="overflow-hidden min-h-0">
+    <slot />
+  </div>
+</div>

@@ -1,0 +1,44 @@
+---
+/**
+ * SearchTrigger — magnifier + shortcut hint button that opens the search dialog.
+ * Detects platform to show ⌘K (Mac) or Ctrl+K (Windows/Linux).
+ */
+---
+
+<button
+  data-search-trigger
+  type="button"
+  class="flex items-center gap-2 rounded-lg border border-line bg-base px-3 py-1.5 text-sm text-text-subtle hover:border-line-strong hover:text-text transition-colors cursor-pointer"
+  aria-label="Search documentation"
+  aria-keyshortcuts="Control+K"
+>
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  </svg>
+  <span class="hidden sm:inline">Search</span>
+  <kbd class="hidden sm:inline-flex items-center gap-0.5 rounded border border-line bg-tint px-1.5 py-0.5 text-[0.625rem] font-medium text-text-subtle">
+    <span data-shortcut-key class="text-xs">Ctrl</span>K
+  </kbd>
+</button>
+
+<script>
+  function initSearchTrigger() {
+    document.querySelectorAll<HTMLElement>("[data-search-trigger]").forEach((btn) => {
+      if (btn.hasAttribute("data-initialized")) return;
+      btn.setAttribute("data-initialized", "true");
+
+      const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
+      const platform = nav.userAgentData?.platform ?? "";
+      const isMac = platform
+        ? /mac/i.test(platform)
+        : /mac|iphone|ipod|ipad/i.test(navigator.userAgent);
+      if (isMac) {
+        btn.setAttribute("aria-keyshortcuts", "Meta+K");
+        const key = btn.querySelector("[data-shortcut-key]");
+        if (key) key.textContent = "\u2318";
+      }
+    });
+  }
+  initSearchTrigger();
+  document.addEventListener("astro:page-load", initSearchTrigger);
+</script>

@@ -1,0 +1,27 @@
+---
+/**
+ * LayerCard — two-layer card with recessed header + raised content.
+ *
+ * Compose with LayerCardHeader + LayerCardContent:
+ *   <LayerCard>
+ *     <LayerCardHeader>Title or tabs</LayerCardHeader>
+ *     <LayerCardContent>Main content</LayerCardContent>
+ *   </LayerCard>
+ *
+ * Use cases: package manager widgets, "next steps" cards, API endpoint cards,
+ * code examples with header bars, feature comparison cards.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { class: className, ...attrs } = Astro.props;
+---
+
+<div
+  class={cn("flex w-full flex-col overflow-hidden rounded-lg bg-recessed text-base ring ring-line", className)}
+  {...attrs}
+>
+  <slot />
+</div>

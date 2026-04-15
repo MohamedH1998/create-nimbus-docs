@@ -1,0 +1,111 @@
+---
+/**
+ * Steps — ordered list with numbered circles and connecting lines.
+ * Wrap markdown ordered list items inside this component.
+ *
+ * Use `--steps-start` CSS variable to offset the counter start.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {
+  start?: number;
+}
+
+const { start, class: className, ...attrs } = Astro.props;
+---
+
+<div data-steps class={cn("steps", className)} style={start !== undefined ? `--steps-start: ${start};` : undefined} {...attrs}>
+  <slot />
+</div>
+
+<script>
+  function initSteps() {
+    // Safari strips list semantics when list-style: none. Adding role="list"
+    // restores VoiceOver announcement of item count.
+    document.querySelectorAll<HTMLElement>("[data-steps]").forEach((el) => {
+      if (el.hasAttribute("data-initialized")) return;
+      el.setAttribute("data-initialized", "true");
+      el.querySelectorAll<HTMLOListElement>("ol").forEach((ol) => {
+        ol.setAttribute("role", "list");
+      });
+    });
+  }
+  initSteps();
+  document.addEventListener("astro:page-load", initSteps);
+</script>
+
+<style>
+  .steps {
+    --_start: var(--steps-start, 1);
+    margin: 1.5rem 0;
+  }
+
+  .steps :global(ol) {
+    counter-reset: step calc(var(--_start) - 1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .steps :global(ol > li) {
+    counter-increment: step;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.75rem 1fr;
+    column-gap: 0.75rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .steps :global(ol > li:last-child) {
+    padding-bottom: 0;
+  }
+
+  /* Number circle — grid item in column 1, vertically centered with first text line via lh unit */
+  .steps :global(ol > li)::before {
+    content: counter(step);
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    margin-top: calc((1lh - 1.75rem) / 2);
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    background: var(--nb-text);
+    color: var(--nb-base);
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 0 0 4px var(--nb-base);
+    z-index: 1;
+  }
+
+  /* All content flows into column 2 */
+  .steps :global(ol > li > *) {
+    grid-column: 2;
+  }
+
+  /* Connecting line — absolutely positioned, outside grid flow */
+  .steps :global(ol > li:not(:last-child))::after {
+    content: "";
+    position: absolute;
+    left: calc(1.75rem / 2 - 0.75px);
+    top: calc((1lh + 1.75rem) / 2);
+    bottom: 0;
+    width: 1.5px;
+    background: var(--nb-line);
+  }
+
+  .steps :global(ol > li > p:first-child > strong:only-child) {
+    color: var(--nb-text);
+  }
+
+  .steps :global(ol > li > p) {
+    margin: 0.25rem 0 0;
+  }
+
+  .steps :global(ol > li > p:first-child) {
+    margin-top: 0;
+  }
+</style>

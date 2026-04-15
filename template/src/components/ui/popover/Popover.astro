@@ -1,0 +1,50 @@
+---
+/**
+ * Popover — anchored floating content container.
+ * Establishes positioning context for PopoverTrigger + PopoverContent.
+ *
+ * Built on the native Popover API (popover attribute).
+ * Light dismiss, escape-to-close, and top-layer rendering are free from the browser.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"div"> {}
+
+const { class: className, ...attrs } = Astro.props;
+const popoverId = `popover-${crypto.randomUUID().slice(0, 8)}`;
+---
+
+<div class={cn("relative inline-block", className)} data-popover-root data-popover-id={popoverId} {...attrs}>
+  <slot />
+</div>
+
+<script>
+  function initPopovers() {
+    document.querySelectorAll<HTMLElement>("[data-popover-root]").forEach((root) => {
+      if (root.hasAttribute("data-initialized")) return;
+      root.setAttribute("data-initialized", "true");
+
+      const id = root.dataset.popoverId!;
+      const trigger = root.querySelector<HTMLButtonElement>("[data-popover-trigger]");
+      const content = root.querySelector<HTMLElement>("[data-popover-content]");
+
+      if (!trigger || !content) return;
+
+      // Wire popovertarget
+      content.id = id;
+      content.setAttribute("popover", "auto");
+      trigger.setAttribute("popovertarget", id);
+
+      // Sync aria-expanded
+      trigger.setAttribute("aria-expanded", "false");
+
+      content.addEventListener("toggle", (e) => {
+        const isOpen = (e as ToggleEvent).newState === "open";
+        trigger.setAttribute("aria-expanded", String(isOpen));
+      });
+    });
+  }
+  initPopovers();
+  document.addEventListener("astro:page-load", initPopovers);
+</script>

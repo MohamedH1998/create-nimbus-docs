@@ -1,0 +1,19 @@
+---
+/**
+ * CollapsibleTrigger — <summary> element for a Collapsible.
+ * Hides native marker. Consumer provides full visual content via slot.
+ */
+import { cn } from "@/lib/cn";
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"summary"> {}
+
+const { class: className, ...attrs } = Astro.props;
+---
+
+<summary
+  class={cn("cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden [&::marker]:hidden", className)}
+  {...attrs}
+>
+  <slot />
+</summary>
