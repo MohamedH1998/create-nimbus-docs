@@ -49,7 +49,7 @@ export async function scaffold(options: ScaffoldOptions) {
 			packageManager === "yarn" ? "yarn" : `${packageManager} install`;
 		execSync(installCmd, {
 			cwd: target,
-			stdio: "ignore",
+			stdio: ["ignore", "ignore", "inherit"],
 		});
 	} catch {
 		s.stop("Failed to install dependencies.");
