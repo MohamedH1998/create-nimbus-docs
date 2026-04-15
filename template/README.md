@@ -1,6 +1,6 @@
 # Nimbus Starter
 
-A documentation site starter built with Astro, Tailwind CSS v4, and MDX. You own every file.
+A documentation site starter built with Astro and Tailwind CSS v4. You own every file.
 
 ## Quick start
 
@@ -10,13 +10,10 @@ cd my-docs
 npm run dev
 ```
 
-Or clone directly:
+Or run directly from GitHub:
 
 ```sh
-npx degit nimbus-docs/nimbus-starter my-docs
-cd my-docs
-npm install
-npm run dev
+npx github:MohamedH1998/create-nimbus-docs my-docs
 ```
 
 Open [http://localhost:4321](http://localhost:4321).
@@ -32,7 +29,7 @@ src/
 ├── components/               # All UI components (yours to modify)
 ├── layouts/                  # BaseLayout, DocsLayout
 ├── lib/                      # Sidebar builder, navigation, TOC, utilities
-├── content/docs/             # Your documentation pages (MDX)
+├── content/docs/             # Your documentation pages
 └── pages/                    # Astro routing (thin shims)
 ```
 
@@ -124,8 +121,8 @@ npm run ci           # Full pipeline (typecheck + astro check + lint + build)
 
 ## Architecture
 
-- **Astro 6** + MDX + content collections
+- **Astro 6** + content collections
 - **Tailwind CSS v4** — `@theme` block bridges `--nb-*` tokens to utilities
-- **Inline components** — shadcn-style, everything in `src/`, imported via `@/`
+- **Inline components** — everything in `src/`, imported via `@/`
 - **No Starlight** — built from scratch, Starlight-compatible frontmatter
 - **Single `docs` collection** — one schema, all extended fields optional
