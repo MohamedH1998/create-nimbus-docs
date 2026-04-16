@@ -19,12 +19,6 @@ The CLI itself is lightweight, but the generated docs site follows the current A
 
 ## Usage
 
-```sh
-npx create-nimbus-docs my-docs
-cd my-docs
-npm run dev
-```
-
 Or run directly from GitHub:
 
 ```sh
