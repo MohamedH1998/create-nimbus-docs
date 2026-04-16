@@ -90,7 +90,7 @@ npx create-nimbus-docs my-docs --yes
 
 ## Deploy targets
 
-**Cloudflare Pages** — Adds `@astrojs/cloudflare`, `wrangler`, `wrangler.jsonc`, and production-safe `predeploy`/`deploy` scripts.
+**Cloudflare** — Adds `@astrojs/cloudflare`, `wrangler`, `wrangler.jsonc`, and production-safe `wrangler dev` / `wrangler deploy` scripts.
 
 **Other** — Vanilla static Astro. Deploy anywhere: Vercel, Netlify, GitHub Pages, S3.
 
@@ -114,7 +114,7 @@ pnpm lint:fix      # Auto-fix lint issues where possible
 pnpm format        # Prettier write pass across the CLI repo
 pnpm format:check  # Prettier verification for CI
 pnpm verify        # Lint + format check + typecheck + build
-pnpm smoke:cloudflare  # Scaffold a temp Cloudflare app and verify STATIC_ASSETS
+pnpm smoke:cloudflare  # Scaffold a temp Cloudflare app and verify Wrangler assets config
 ```
 
 ## Preview Workflow

@@ -29,11 +29,11 @@ export async function updatePackageJson(dir: string, options: PackageOptions) {
 
 		// Keep preview/deploy self-contained so Cloudflare projects always build first.
 		pkg.scripts["prepreview:cf"] = "astro build";
-		pkg.scripts["preview:cf"] = "wrangler pages dev ./dist";
+		pkg.scripts["preview:cf"] = "wrangler dev";
 		pkg.scripts["predeploy"] =
 			pkg.scripts["ci"] ??
 			"tsc --noEmit && astro check && eslint . && astro build";
-		pkg.scripts["deploy"] = "wrangler pages deploy ./dist";
+		pkg.scripts["deploy"] = "wrangler deploy";
 	}
 
 	writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");

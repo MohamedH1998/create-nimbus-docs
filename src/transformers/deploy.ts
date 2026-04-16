@@ -39,11 +39,11 @@ async function applyCloudflare(dir: string) {
 			{
 				$schema: "node_modules/wrangler/config-schema.json",
 				name: "my-docs",
-				pages_build_output_dir: "./dist",
-				assets: {
-					binding: "STATIC_ASSETS",
-				},
 				compatibility_date: "2026-04-15",
+				assets: {
+					directory: "./dist",
+					not_found_handling: "404-page",
+				},
 			},
 			null,
 			2,
