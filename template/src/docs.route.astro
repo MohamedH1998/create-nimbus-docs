@@ -44,6 +44,7 @@ const prevNext = getPrevNext(
   validInternalLinks,
 );
 const template = entry.data.template ?? "doc";
+const hasBodyContent = typeof entry.body === "string" && entry.body.trim().length > 0;
 
 // Derive edit URL. filePath is set by Astro's glob loader (includes extension).
 const entryFilePath = (entry as DocsEntryWithFilePath).filePath;
@@ -72,14 +73,26 @@ const editUrl = docsConfig.editPattern
   noindex={entry.data.noindex}
   aiDeprioritize={entry.data.aiDeprioritize}
 >
-  {template === "splash" && entry.data.hero ? (
-    <Hero
-      title={entry.data.hero.title ?? entry.data.title}
-      tagline={entry.data.hero.tagline}
-      actions={entry.data.hero.actions}
-    >
-      <Content />
-    </Hero>
+  {template === "splash" ? (
+    <Fragment>
+      {entry.data.hero && (
+        <Hero
+          title={entry.data.hero.title ?? entry.data.title}
+          tagline={entry.data.hero.tagline}
+          actions={entry.data.hero.actions}
+        />
+      )}
+
+      {hasBodyContent && (
+        <section class="px-6 pb-16 sm:pb-20">
+          <div class="mx-auto w-full max-w-(--nb-content-max)">
+            <article class="docs-content max-w-none">
+              <Content />
+            </article>
+          </div>
+        </section>
+      )}
+    </Fragment>
   ) : (
     <Content />
   )}

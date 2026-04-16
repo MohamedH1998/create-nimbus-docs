@@ -2,3 +2,6 @@ src/
 tsconfig.json
 node_modules/
 .gitignore
+template/node_modules/
+template/.astro/
+template/dist/

@@ -200,10 +200,11 @@ const hasPagination = Astro.slots.has("pagination");
   {/* Mobile sidebar overlay — native <dialog> for free focus trap + escape + backdrop */}
   <dialog
     data-mobile-sidebar
-    class="m-0 p-0 h-full w-full max-h-full max-w-full bg-transparent backdrop:bg-black/40"
+    data-state="closed"
+    class="group fixed inset-0 m-0 h-full w-full max-h-full max-w-full border-0 bg-transparent p-0 data-[state=open]:bg-black/40 data-[state=closing]:bg-black/40"
     aria-label="Site navigation"
   >
-    <div data-mobile-sidebar-panel class="w-(--nb-sidebar-width) h-full bg-base overflow-y-auto shadow-lg">
+    <div data-mobile-sidebar-panel class="h-full w-(--nb-sidebar-width) max-w-[85vw] -translate-x-full overflow-y-auto bg-base shadow-lg transition-transform duration-250 ease-out group-data-[state=open]:translate-x-0 motion-reduce:transition-none">
       <div class="sticky top-0 z-[1] flex items-center justify-between border-b border-line bg-base px-4 py-3">
         <span class="font-semibold text-sm text-text">Navigation</span>
         <button data-close-sidebar class="flex items-center justify-center w-8 h-8 rounded-md text-text-subtle hover:bg-interact hover:text-text transition-colors" aria-label="Close sidebar">
@@ -228,27 +229,66 @@ const hasPagination = Astro.slots.has("pagination");
 
     const dialog = document.querySelector<HTMLDialogElement>("[data-mobile-sidebar]");
     const menuBtn = document.querySelector<HTMLElement>("[data-menu-btn]");
+    const CLOSE_DURATION_MS = 250;
 
     if (dialog && menuBtn) {
-      menuBtn.addEventListener("click", () => {
+      let closeTimer: ReturnType<typeof setTimeout> | undefined;
+
+      const openSidebar = () => {
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          closeTimer = undefined;
+        }
+        if (dialog.open) return;
+
         dialog.showModal();
+        dialog.dataset.state = "closed";
         lockScroll();
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            dialog.dataset.state = "open";
+          });
+        });
+
         dialog.querySelector<HTMLElement>("[data-close-sidebar]")?.focus();
+      };
+
+      const closeSidebar = () => {
+        if (!dialog.open || dialog.dataset.state === "closing") return;
+
+        dialog.dataset.state = "closing";
+        closeTimer = setTimeout(() => {
+          dialog.close();
+        }, CLOSE_DURATION_MS);
+      };
+
+      menuBtn.addEventListener("click", openSidebar);
+
+      dialog.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        closeSidebar();
       });
 
       // Cleanup on close — fires for Escape, close button, backdrop click
       dialog.addEventListener("close", () => {
+        if (closeTimer) {
+          clearTimeout(closeTimer);
+          closeTimer = undefined;
+        }
+
+        dialog.dataset.state = "closed";
         unlockScroll();
         menuBtn.focus();
       });
 
       // Close button
       dialog.querySelector("[data-close-sidebar]")
-        ?.addEventListener("click", () => dialog.close());
+        ?.addEventListener("click", closeSidebar);
 
       // Backdrop click (clicks on <dialog> itself, outside the panel)
       dialog.addEventListener("click", (e) => {
-        if (e.target === dialog) dialog.close();
+        if (e.target === dialog) closeSidebar();
       });
     }
   </script>

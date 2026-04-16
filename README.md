@@ -4,6 +4,10 @@ Scaffold a [Nimbus](https://github.com/MohamedH1998/nimbus-starter) docs site in
 
 **Nimbus** is a documentation site starter built with Astro and Tailwind CSS v4. No framework abstraction layer — every file lives in your project, and you can modify anything.
 
+Recommended: Node.js `22.13+` for the smoothest setup.
+
+The CLI itself is lightweight, but the generated docs site follows the current Astro/Vite toolchain. If install or build fails on an older Node release, switch to Node.js `22.13+` and retry.
+
 ## What you get
 
 - **Pagefind search** — Cmd+K, lazy-loaded, zero runtime cost
@@ -33,6 +37,8 @@ npx github:MohamedH1998/create-nimbus-docs my-docs
 2. Copies the template into your project
 3. Configures for your deploy target
 4. Installs dependencies
+
+The generated project is cleaned before install, so cached `.astro/`, `node_modules/`, and mismatched lockfiles are not carried over from the template.
 
 ```
 $ npx create-nimbus-docs
@@ -102,6 +108,8 @@ pnpm typecheck
 pnpm build
 node dist/index.js my-docs
 ```
+
+If setup or verification fails on an older Node release, switch to Node.js `22.13+` before running `pnpm verify` or the playground commands.
 
 Quality scripts:
 
