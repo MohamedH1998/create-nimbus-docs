@@ -75,10 +75,7 @@ async function main() {
 
 	const runCmd = pm === "npm" ? "npm run" : pm;
 
-	p.note(
-		[`cd ${responses.dir}`, `${runCmd} dev`].join("\n"),
-		"Next steps",
-	);
+	p.note([`cd ${responses.dir}`, `${runCmd} dev`].join("\n"), "Next steps");
 
 	p.outro("Done.");
 }

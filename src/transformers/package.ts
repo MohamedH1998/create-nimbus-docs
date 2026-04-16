@@ -23,10 +23,16 @@ export async function updatePackageJson(dir: string, options: PackageOptions) {
 	if (options.deploy === "cloudflare") {
 		// Add cloudflare adapter dependency
 		pkg.dependencies ??= {};
+		pkg.devDependencies ??= {};
 		pkg.dependencies["@astrojs/cloudflare"] = "^13.1.10";
+		pkg.devDependencies.wrangler = "^4.83.0";
 
-		// Add deploy scripts
+		// Keep preview/deploy self-contained so Cloudflare projects always build first.
+		pkg.scripts["prepreview:cf"] = "astro build";
 		pkg.scripts["preview:cf"] = "wrangler pages dev ./dist";
+		pkg.scripts["predeploy"] =
+			pkg.scripts["ci"] ??
+			"tsc --noEmit && astro check && eslint . && astro build";
 		pkg.scripts["deploy"] = "wrangler pages deploy ./dist";
 	}
 

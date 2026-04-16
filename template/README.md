@@ -119,6 +119,13 @@ npm run lint         # ESLint
 npm run ci           # Full pipeline (typecheck + astro check + lint + build)
 ```
 
+If you scaffolded with Cloudflare Pages, the project also includes:
+
+```sh
+npm run preview:cf   # Build, then preview with Wrangler Pages locally
+npm run deploy       # Run the CI pipeline, then deploy ./dist to Cloudflare Pages
+```
+
 ## Architecture
 
 - **Astro 6** + content collections

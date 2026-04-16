@@ -41,8 +41,7 @@ export async function getPromptResponses(
 			validate(value) {
 				if (!value) return "Please enter a directory name.";
 				const resolved = resolve(value);
-				if (existsSync(resolved))
-					return `Directory "${value}" already exists.`;
+				if (existsSync(resolved)) return `Directory "${value}" already exists.`;
 			},
 		}));
 

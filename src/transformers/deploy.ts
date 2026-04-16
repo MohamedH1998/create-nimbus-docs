@@ -4,7 +4,7 @@ import { join } from "node:path";
 /**
  * Apply deploy target configuration.
  *
- * - "cloudflare": Add @astrojs/cloudflare adapter, wrangler.jsonc, deploy scripts
+ * - "cloudflare": Add @astrojs/cloudflare adapter, wrangler.jsonc, and Cloudflare deploy tooling
  * - "other": No adapter, vanilla static Astro output
  */
 export async function applyDeployTarget(

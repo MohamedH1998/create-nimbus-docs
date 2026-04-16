@@ -1,6 +1,6 @@
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 
-export async function getVisibleDocs() {
+export async function getVisibleDocs(): Promise<CollectionEntry<"docs">[]> {
   const all = await getCollection("docs");
-  return import.meta.env.PROD ? all.filter((e) => !e.data.draft) : all;
+  return import.meta.env.PROD ? all.filter((entry: CollectionEntry<"docs">) => !entry.data.draft) : all;
 }

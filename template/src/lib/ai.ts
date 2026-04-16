@@ -34,7 +34,7 @@ export function entryMarkdownUrl(base: string, id: string): string {
 /** Returns all docs pages eligible for AI outputs (filters draft, llms:false, robots disallows). */
 export async function getAIPages(): Promise<DocEntry[]> {
   const allDocs = await getVisibleDocs();
-  return allDocs.filter((entry) => {
+  return allDocs.filter((entry: DocEntry) => {
     if (entry.data.llms === false) return false;
     const urlPath = entry.id === "index" ? "/" : `/${entry.id}/`;
     if (isDisallowedByRobots(urlPath)) return false;
