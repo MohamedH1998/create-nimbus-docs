@@ -7,7 +7,7 @@ declare const __APP_VERSION__: string;
 declare const __MIN_NODE_VERSION__: string;
 
 const args = mri(process.argv.slice(2), {
-	boolean: ["yes", "dry-run", "help", "version"],
+	boolean: ["yes", "dry-run", "help", "version", "skip-install"],
 	string: ["deploy", "content"],
 	alias: { y: "yes", h: "help", v: "version" },
 });
@@ -23,6 +23,7 @@ if (args.help) {
     --deploy <target>      cloudflare | other (default: other)
     --content <type>       starter | empty (default: starter)
     --yes, -y              Accept all defaults, skip prompts
+    --skip-install         Write files but skip dependency installation
     --dry-run              Show what would be created without writing
     --help, -h             Show help
     --version, -v          Show version
@@ -76,6 +77,7 @@ async function main() {
 	await scaffold({
 		...responses,
 		packageManager: pm,
+		skipInstall: args["skip-install"],
 	});
 
 	const runCmd = pm === "npm" ? "npm run" : pm;

@@ -72,6 +72,7 @@ Flags:
   --deploy <target>      cloudflare | other (default: other)
   --content <type>       starter | empty (default: starter)
   --yes, -y              Accept all defaults, skip prompts
+  --skip-install         Write files but skip dependency installation
   --dry-run              Show what would be created without writing
   --help, -h             Show help
   --version, -v          Show version
@@ -113,6 +114,7 @@ pnpm lint:fix      # Auto-fix lint issues where possible
 pnpm format        # Prettier write pass across the CLI repo
 pnpm format:check  # Prettier verification for CI
 pnpm verify        # Lint + format check + typecheck + build
+pnpm smoke:cloudflare  # Scaffold a temp Cloudflare app and verify STATIC_ASSETS
 ```
 
 ## Preview Workflow

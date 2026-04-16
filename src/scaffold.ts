@@ -23,10 +23,11 @@ interface ScaffoldOptions {
 	content: "starter" | "empty";
 	packageManager: "npm" | "pnpm" | "yarn" | "bun";
 	git: boolean;
+	skipInstall?: boolean;
 }
 
 export async function scaffold(options: ScaffoldOptions) {
-	const { dir, deploy, content, packageManager, git } = options;
+	const { dir, deploy, content, packageManager, git, skipInstall } = options;
 
 	const s = p.spinner();
 
@@ -65,6 +66,11 @@ export async function scaffold(options: ScaffoldOptions) {
 				"Could not initialize a git repository. Run `git init` manually if you want version control.",
 			);
 		}
+	}
+
+	if (skipInstall) {
+		p.log.step("Skipped dependency installation.");
+		return;
 	}
 
 	// 3. Install dependencies
