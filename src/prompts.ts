@@ -57,7 +57,7 @@ export async function getPromptResponses(
 			options: [
 				{
 					value: "cloudflare",
-					label: "Cloudflare Pages",
+					label: "Cloudflare",
 				},
 				{
 					value: "other",

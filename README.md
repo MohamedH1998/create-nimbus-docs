@@ -43,7 +43,7 @@ $ npx create-nimbus-docs
 │  ./my-docs
 │
 ◆  Deploy target?
-│  ● Cloudflare Pages
+│  ● Cloudflare
 │  ○ Other
 │
 ◆  Starter content?

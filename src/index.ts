@@ -61,7 +61,7 @@ async function main() {
 	// Summary
 	p.note(
 		[
-			`Deploy:   ${responses.deploy === "cloudflare" ? "Cloudflare Pages" : "Static (deploy anywhere)"}`,
+			`Deploy:   ${responses.deploy === "cloudflare" ? "Cloudflare" : "Other (deploy anywhere)"}`,
 			`Content:  ${responses.content === "starter" ? "Getting started guide + example page" : "Empty shell"}`,
 			`Manager:  ${pm}`,
 			`Git:      ${responses.git ? "Initialize repository" : "Skip"}`,
