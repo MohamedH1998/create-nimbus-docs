@@ -112,3 +112,30 @@ pnpm format        # Prettier write pass across the CLI repo
 pnpm format:check  # Prettier verification for CI
 pnpm verify        # Lint + format check + typecheck + build
 ```
+
+## Preview Workflow
+
+Use `template/` for the fast inner loop when you are changing UI, styles, or markdown behavior:
+
+```sh
+pnpm template:dev
+```
+
+Use `.playground/` when you want to verify the actual scaffolded output:
+
+```sh
+pnpm playground:refresh
+pnpm playground:dev
+
+# Or do both in one command
+pnpm playground:start
+```
+
+If you need to test the Cloudflare-specific scaffold:
+
+```sh
+pnpm playground:refresh:cloudflare
+pnpm playground:dev
+```
+
+`template/` is live while you edit it. `.playground/` is a snapshot, so regenerate it after template or scaffold changes when you want to test the real created project.

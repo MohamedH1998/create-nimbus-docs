@@ -8,7 +8,13 @@ const ROOT_DIR = fileURLToPath(new URL(".", import.meta.url));
 /** @type {import('eslint').Linter.Config[]} */
 export default [
 	{
-		ignores: ["dist/", "node_modules/", "template/", ".tmp-cloudflare-smoke*/"],
+		ignores: [
+			"dist/",
+			"node_modules/",
+			".playground/",
+			"template/",
+			".tmp-cloudflare-smoke*/",
+		],
 	},
 	{
 		languageOptions: {

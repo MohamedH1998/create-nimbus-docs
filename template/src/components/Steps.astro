@@ -51,9 +51,8 @@ const { start, class: className, ...attrs } = Astro.props;
   .steps :global(ol > li) {
     counter-increment: step;
     position: relative;
-    display: grid;
-    grid-template-columns: 1.75rem 1fr;
-    column-gap: 0.75rem;
+    min-height: 1.75rem;
+    padding-inline-start: calc(1.75rem + 0.75rem);
     padding-bottom: 1.5rem;
   }
 
@@ -64,10 +63,9 @@ const { start, class: className, ...attrs } = Astro.props;
   /* Number circle — grid item in column 1, vertically centered with first text line via lh unit */
   .steps :global(ol > li)::before {
     content: counter(step);
-    grid-column: 1;
-    grid-row: 1;
-    align-self: start;
-    margin-top: calc((1lh - 1.75rem) / 2);
+    position: absolute;
+    inset-inline-start: 0;
+    top: calc((1lh - 1.75rem) / 2);
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 9999px;
@@ -79,11 +77,6 @@ const { start, class: className, ...attrs } = Astro.props;
     place-items: center;
     box-shadow: 0 0 0 4px var(--nb-base);
     z-index: 1;
-  }
-
-  /* All content flows into column 2 */
-  .steps :global(ol > li > *) {
-    grid-column: 2;
   }
 
   /* Connecting line — absolutely positioned, outside grid flow */

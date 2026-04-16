@@ -125,23 +125,29 @@
   border-top-left-radius: var(--tab-border-radius);
 }
 
-/* Rounded bordered table — matches card radius (rounded-xl = 0.75rem).
-   Uses border-collapse:separate so border-radius works natively on the
-   <table> element. overflow:hidden clips cells to rounded corners. */
+/* Rounded bordered table with local horizontal scrolling on narrow screens.
+   Starlight uses `display:block; overflow:auto` for markdown tables; we keep
+   the same containment behavior while preserving the Nimbus border treatment. */
 .docs-content :where(table:not([class])) {
+  display: block;
   width: 100%;
+  max-width: 100%;
   text-align: left;
   border-collapse: separate;
   border-spacing: 0;
   border-radius: 0.75rem;
   border: 1px solid var(--nb-line);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .docs-content :where(th:not([class])),
 .docs-content :where(td:not([class])) {
   padding: 0.625rem 0.75rem;
   text-align: left;
+  vertical-align: top;
   border-bottom: 1px solid var(--nb-line);
 }
 
@@ -169,4 +175,3 @@
 .docs-content :where(a:not([class]):hover) {
   text-decoration-color: var(--nb-text);
 }
-
