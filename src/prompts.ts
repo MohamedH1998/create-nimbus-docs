@@ -9,6 +9,7 @@ interface PromptFlags {
 	deploy?: "cloudflare" | "other";
 	content?: "starter" | "empty";
 	packageManager?: PackageManager;
+	git?: boolean;
 	yes?: boolean;
 }
 
@@ -17,6 +18,7 @@ export interface PromptResponses {
 	deploy: "cloudflare" | "other";
 	content: "starter" | "empty";
 	packageManager: PackageManager;
+	git: boolean;
 }
 
 export async function getPromptResponses(
@@ -29,6 +31,7 @@ export async function getPromptResponses(
 			deploy: flags.deploy ?? "other",
 			content: flags.content ?? "starter",
 			packageManager: flags.packageManager ?? "npm",
+			git: flags.git ?? true,
 		};
 	}
 
@@ -98,5 +101,14 @@ export async function getPromptResponses(
 
 	if (p.isCancel(packageManager)) return packageManager;
 
-	return { dir: dir as string, deploy, content, packageManager };
+	const git =
+		flags.git ??
+		(await p.confirm({
+			message: "Initialize a git repository?",
+			initialValue: true,
+		}));
+
+	if (p.isCancel(git)) return git;
+
+	return { dir: dir as string, deploy, content, packageManager, git };
 }

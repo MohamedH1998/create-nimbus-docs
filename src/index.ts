@@ -46,6 +46,7 @@ async function main() {
 		deploy: args.deploy as "cloudflare" | "other" | undefined,
 		content: args.content as "starter" | "empty" | undefined,
 		packageManager: detected !== "npm" ? detected : undefined,
+		git: undefined,
 		yes: args.yes,
 	});
 
@@ -62,6 +63,7 @@ async function main() {
 			`Deploy:   ${responses.deploy === "cloudflare" ? "Cloudflare Pages" : "Static (deploy anywhere)"}`,
 			`Content:  ${responses.content === "starter" ? "Getting started guide + example page" : "Empty shell"}`,
 			`Manager:  ${pm}`,
+			`Git:      ${responses.git ? "Initialize repository" : "Skip"}`,
 		].join("\n"),
 		"Creating project with",
 	);

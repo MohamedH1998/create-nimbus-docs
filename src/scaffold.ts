@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import { spawn } from "node:child_process";
-import { cpSync, existsSync, rmSync } from "node:fs";
+import { cpSync, existsSync, renameSync, rmSync } from "node:fs";
 import { resolve, dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyDeployTarget } from "./transformers/deploy.js";
@@ -22,10 +22,11 @@ interface ScaffoldOptions {
 	deploy: "cloudflare" | "other";
 	content: "starter" | "empty";
 	packageManager: "npm" | "pnpm" | "yarn" | "bun";
+	git: boolean;
 }
 
 export async function scaffold(options: ScaffoldOptions) {
-	const { dir, deploy, content, packageManager } = options;
+	const { dir, deploy, content, packageManager, git } = options;
 
 	const s = p.spinner();
 
@@ -53,22 +54,26 @@ export async function scaffold(options: ScaffoldOptions) {
 	await updatePackageJson(target, { name: dir, deploy });
 	s.stop("Project configured.");
 
+	if (git) {
+		s.start("Initializing git repository…");
+		try {
+			await runCommand("git", ["init"], target);
+			s.stop("Git repository initialized.");
+		} catch {
+			s.stop("Skipped git initialization.");
+			p.log.warn(
+				"Could not initialize a git repository. Run `git init` manually if you want version control.",
+			);
+		}
+	}
+
 	// 3. Install dependencies
 	s.start(`Installing dependencies via ${packageManager}…`);
 	try {
 		const cmd =
 			packageManager === "yarn" ? "yarn" : `${packageManager} install`;
 		const [bin, ...args] = cmd.split(" ");
-		await new Promise<void>((resolve, reject) => {
-			const child = spawn(bin, args, {
-				cwd: target,
-				stdio: ["ignore", "ignore", "inherit"],
-			});
-			child.on("close", (code) =>
-				code === 0 ? resolve() : reject(new Error(`exit ${code}`)),
-			);
-			child.on("error", reject);
-		});
+		await runCommand(bin, args, target);
 	} catch {
 		s.stop("Failed to install dependencies.");
 		p.log.warn(
@@ -103,4 +108,25 @@ function normalizePackageManagerFiles(
 			rmSync(join(dir, lockfile), { force: true });
 		}
 	}
+
+	const dotGitignorePath = join(dir, ".gitignore");
+	const shippedGitignorePath = join(dir, "gitignore");
+	if (!existsSync(dotGitignorePath) && existsSync(shippedGitignorePath)) {
+		renameSync(shippedGitignorePath, dotGitignorePath);
+	} else {
+		rmSync(shippedGitignorePath, { force: true });
+	}
+}
+
+function runCommand(bin: string, args: string[], cwd: string) {
+	return new Promise<void>((resolve, reject) => {
+		const child = spawn(bin, args, {
+			cwd,
+			stdio: ["ignore", "ignore", "inherit"],
+		});
+		child.on("close", (code) =>
+			code === 0 ? resolve() : reject(new Error(`exit ${code}`)),
+		);
+		child.on("error", reject);
+	});
 }

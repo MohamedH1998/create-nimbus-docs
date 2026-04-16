@@ -135,12 +135,12 @@ const HeadElementSchema = z.object({
 // ---------------------------------------------------------------------------
 
 export const DocsConfigSchema = z.object({
-  site: z.string().url(),
+  site: z.url(),
   title: z.string(),
   logo: z.string().max(2),
   locale: z.string().default("en"),
   homeLabel: z.string().default("Home"),
-  github: z.string().url().nullable(),
+  github: z.url().nullable(),
   editPattern: z.string().nullable().optional(),
   footer: z.string().default("Built with Nimbus"),
   head: z.array(HeadElementSchema).default([]),

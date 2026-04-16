@@ -27,7 +27,7 @@ npx github:MohamedH1998/create-nimbus-docs my-docs
 
 ## What it does
 
-1. Asks three questions: project directory, deploy target, starter content
+1. Asks a few questions: project directory, deploy target, starter content, package manager, and whether to initialize git
 2. Copies the template into your project
 3. Configures for your deploy target
 4. Installs dependencies
